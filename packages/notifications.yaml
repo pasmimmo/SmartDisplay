@@ -219,3 +219,4 @@ script:
           animation: FADE_IN
           time: 120ms
       - script.execute: reset_sleep_timer
+

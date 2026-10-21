@@ -7,6 +7,7 @@ substitutions:
   device_name: "minidisplay"
   friendly_name: "MiniDisplay"
   timezone: "Europe/Rome"
+  weather_entity: "weather.forecast_casa"
 
 # Inclusione dei singoli moduli hardware e software
 packages:
@@ -16,4 +17,5 @@ packages:
   sensors: !include packages/sensors.yaml
   fonts: !include packages/fonts.yaml
   notifications: !include packages/notifications.yaml
+  weather: !include packages/weather.yaml
   ui: !include packages/ui.yaml

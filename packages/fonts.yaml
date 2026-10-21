@@ -33,3 +33,17 @@ font:
       - "\U0000E898"  # lock_open
       - "\U0000E7F4"  # notifications
       - "\U0000E872"  # delete
+
+  - file: "gfonts://Material+Symbols+Outlined"
+    id: font_weather
+    size: 26
+    glyphs:
+      - "\U0000E81A"  # sunny
+      - "\U0000F159"  # bedtime / clear-night
+      - "\U0000F172"  # partly_cloudy_day
+      - "\U0000F15C"  # cloudy
+      - "\U0000F176"  # rainy / pouring
+      - "\U0000EBDB"  # thunderstorm
+      - "\U0000EB3B"  # ac_unit (snow/hail)
+      - "\U0000E818"  # foggy
+      - "\U0000E846"  # thermostat

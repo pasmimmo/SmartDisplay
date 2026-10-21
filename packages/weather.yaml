@@ -1,0 +1,65 @@
+# ============================================================
+# METEO DA HOME ASSISTANT
+# ============================================================
+
+substitutions:
+  weather_entity: "weather.forecast_casa"
+
+sensor:
+  - platform: homeassistant
+    id: ha_weather_temp
+    entity_id: ${weather_entity}
+    attribute: temperature
+    internal: true
+    on_value:
+      then:
+        - script.execute: update_weather_ui
+
+text_sensor:
+  - platform: homeassistant
+    id: ha_weather_condition
+    entity_id: ${weather_entity}
+    internal: true
+    on_value:
+      then:
+        - script.execute: update_weather_ui
+
+script:
+  - id: update_weather_ui
+    mode: restart
+    then:
+      - lvgl.label.update:
+          id: weather_icon_label
+          text: !lambda |-
+            std::string cond = id(ha_weather_condition).state;
+            if (cond == "sunny") return std::string("\uE81A");
+            if (cond == "clear-night") return std::string("\uF159");
+            if (cond == "partlycloudy") return std::string("\uF172");
+            if (cond == "cloudy") return std::string("\uF15C");
+            if (cond == "rainy" || cond == "pouring") return std::string("\uF176");
+            if (cond == "lightning" || cond == "lightning-rainy") return std::string("\uEBDB");
+            if (cond == "snowy" || cond == "snowy-rainy" || cond == "hail") return std::string("\uEB3B");
+            if (cond == "fog") return std::string("\uE818");
+            if (cond == "windy" || cond == "windy-variant") return std::string("\uF15C");
+            return std::string("\uE846");
+          text_color: !lambda |-
+            std::string cond = id(ha_weather_condition).state;
+            if (cond == "sunny") return Color(0xFF, 0xB3, 0x00);
+            if (cond == "clear-night") return Color(0x80, 0xD8, 0xFF);
+            if (cond == "partlycloudy") return Color(0xFF, 0xCA, 0x28);
+            if (cond == "cloudy") return Color(0xB0, 0xBE, 0xC5);
+            if (cond == "rainy" || cond == "pouring") return Color(0x42, 0xA5, 0xF5);
+            if (cond == "lightning" || cond == "lightning-rainy") return Color(0xFF, 0xD5, 0x4F);
+            if (cond == "snowy" || cond == "snowy-rainy" || cond == "hail") return Color(0xE0, 0xF7, 0xFA);
+            if (cond == "fog") return Color(0x90, 0xA4, 0xAE);
+            return Color(0xFF, 0xFF, 0xFF);
+
+      - lvgl.label.update:
+          id: weather_temp_label
+          text: !lambda |-
+            if (isnan(id(ha_weather_temp).state)) {
+              return std::string("--°C");
+            }
+            char buf[16];
+            snprintf(buf, sizeof(buf), "%.1f°C", id(ha_weather_temp).state);
+            return std::string(buf);

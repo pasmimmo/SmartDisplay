@@ -64,3 +64,4 @@ media_player:
       format: WAV
       sample_rate: 24000
       num_channels: 1
+

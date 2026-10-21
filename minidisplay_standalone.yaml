@@ -309,6 +309,45 @@ script:
             );
             return std::string(buf);
 
+  - id: update_weather_ui
+    mode: restart
+    then:
+      - lvgl.label.update:
+          id: weather_icon_label
+          text: !lambda |-
+            std::string cond = id(ha_weather_condition).state;
+            if (cond == "sunny") return std::string("\uE81A");
+            if (cond == "clear-night") return std::string("\uF159");
+            if (cond == "partlycloudy") return std::string("\uF172");
+            if (cond == "cloudy") return std::string("\uF15C");
+            if (cond == "rainy" || cond == "pouring") return std::string("\uF176");
+            if (cond == "lightning" || cond == "lightning-rainy") return std::string("\uEBDB");
+            if (cond == "snowy" || cond == "snowy-rainy" || cond == "hail") return std::string("\uEB3B");
+            if (cond == "fog") return std::string("\uE818");
+            if (cond == "windy" || cond == "windy-variant") return std::string("\uF15C");
+            return std::string("\uE846");
+          text_color: !lambda |-
+            std::string cond = id(ha_weather_condition).state;
+            if (cond == "sunny") return Color(0xFF, 0xB3, 0x00);
+            if (cond == "clear-night") return Color(0x80, 0xD8, 0xFF);
+            if (cond == "partlycloudy") return Color(0xFF, 0xCA, 0x28);
+            if (cond == "cloudy") return Color(0xB0, 0xBE, 0xC5);
+            if (cond == "rainy" || cond == "pouring") return Color(0x42, 0xA5, 0xF5);
+            if (cond == "lightning" || cond == "lightning-rainy") return Color(0xFF, 0xD5, 0x4F);
+            if (cond == "snowy" || cond == "snowy-rainy" || cond == "hail") return Color(0xE0, 0xF7, 0xFA);
+            if (cond == "fog") return Color(0x90, 0xA4, 0xAE);
+            return Color(0xFF, 0xFF, 0xFF);
+
+      - lvgl.label.update:
+          id: weather_temp_label
+          text: !lambda |-
+            if (isnan(id(ha_weather_temp).state)) {
+              return std::string("--°C");
+            }
+            char buf[16];
+            snprintf(buf, sizeof(buf), "%.1f°C", id(ha_weather_temp).state);
+            return std::string(buf);
+
 # ============================================================
 # SENSORI
 # ============================================================
@@ -339,6 +378,15 @@ sensor:
     name: "Uptime"
     update_interval: 60s
     entity_category: diagnostic
+
+  - platform: homeassistant
+    id: ha_weather_temp
+    entity_id: weather.forecast_casa
+    attribute: temperature
+    internal: true
+    on_value:
+      then:
+        - script.execute: update_weather_ui
 
 binary_sensor:
   - platform: gpio
@@ -374,6 +422,14 @@ text_sensor:
     id: esphome_version_text
     hide_timestamp: true
     entity_category: diagnostic
+
+  - platform: homeassistant
+    id: ha_weather_condition
+    entity_id: weather.forecast_casa
+    internal: true
+    on_value:
+      then:
+        - script.execute: update_weather_ui
 
 # ============================================================
 # BACKLIGHT
@@ -532,6 +588,20 @@ font:
       - "\U0000E7F4"
       - "\U0000E872"
 
+  - file: "gfonts://Material+Symbols+Outlined"
+    id: font_weather
+    size: 26
+    glyphs:
+      - "\U0000E81A"  # sunny
+      - "\U0000F159"  # bedtime / clear-night
+      - "\U0000F172"  # partly_cloudy_day
+      - "\U0000F15C"  # cloudy
+      - "\U0000F176"  # rainy / pouring
+      - "\U0000EBDB"  # thunderstorm
+      - "\U0000EB3B"  # ac_unit (snow/hail)
+      - "\U0000E818"  # foggy
+      - "\U0000E846"  # thermostat
+
 # ============================================================
 # LVGL
 # ============================================================
@@ -563,10 +633,37 @@ lvgl:
             id: clock_label
             text: "--:--"
             align: CENTER
+            y: -20
             text_font: font_clock
             text_color: 0xFFFFFF
             clickable: false
             bg_opa: TRANSP
+
+        - label:
+            id: weather_icon_label
+            text: "\uE846"
+            align: CENTER
+            x: -28
+            y: 44
+            text_font: font_weather
+            text_color: 0x888888
+            clickable: false
+            bg_opa: TRANSP
+
+        - label:
+            id: weather_temp_label
+            text: "--°C"
+            align: CENTER
+            x: 18
+            y: 44
+            text_font: font_text
+            text_color: 0xFFFFFF
+            clickable: false
+            bg_opa: TRANSP
+
+      on_load:
+        then:
+          - script.execute: update_weather_ui
 
       on_swipe_down:
         then:

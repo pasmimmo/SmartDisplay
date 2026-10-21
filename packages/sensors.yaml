@@ -64,3 +64,4 @@ text_sensor:
     id: esphome_version_text
     hide_timestamp: true
     entity_category: diagnostic
+

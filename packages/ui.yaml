@@ -16,7 +16,7 @@ lvgl:
 
   pages:
     # ----------------------------------------------------------
-    # HOME PAGE (Orologio)
+    # HOME PAGE (Orologio + Meteo)
     # ----------------------------------------------------------
     - id: home_page
       bg_color: 0x000000
@@ -27,10 +27,37 @@ lvgl:
             id: clock_label
             text: "--:--"
             align: CENTER
+            y: -20
             text_font: font_clock
             text_color: 0xFFFFFF
             clickable: false
             bg_opa: TRANSP
+
+        - label:
+            id: weather_icon_label
+            text: "\uE846"
+            align: CENTER
+            x: -28
+            y: 44
+            text_font: font_weather
+            text_color: 0x888888
+            clickable: false
+            bg_opa: TRANSP
+
+        - label:
+            id: weather_temp_label
+            text: "--°C"
+            align: CENTER
+            x: 18
+            y: 44
+            text_font: font_text
+            text_color: 0xFFFFFF
+            clickable: false
+            bg_opa: TRANSP
+
+      on_load:
+        then:
+          - script.execute: update_weather_ui
 
       on_swipe_down:
         then:
@@ -309,3 +336,4 @@ interval:
             auto now = id(sntp_time).now();
             if (!now.is_valid()) return std::string("--:--");
             return now.strftime("%H:%M");
+

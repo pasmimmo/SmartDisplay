@@ -52,3 +52,4 @@ light:
     id: display_backlight
     name: "${friendly_name} Luce Schermo"
     restore_mode: ALWAYS_ON
+
