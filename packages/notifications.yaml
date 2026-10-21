@@ -88,9 +88,10 @@ api:
 
         - script.stop: notification_timeout
         - script.execute: show_notification_transition
+        - script.execute: update_badge_ui
         - light.turn_on:
             id: display_backlight
-            transition_length: 0ms
+            transition_length: 250ms
         - script.execute: reset_sleep_timer
         - if:
             condition:

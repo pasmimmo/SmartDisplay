@@ -3,7 +3,7 @@
 # ==============================================================================
 # - Audio DAC: Everest ES8311 over dedicated I2C bus (address 0x18)
 # - I2S Digital Audio: MCLK GPIO16, BCLK GPIO9, LRCLK GPIO45, DOUT GPIO8
-# - Power Amp: Onboard amplifier enable switch on GPIO46
+# - Power Amp: Onboard amplifier enable switch on GPIO46 (dynamically managed)
 # - Media Player: Integrated with Home Assistant announcement pipeline (TTS/WAV)
 # ==============================================================================
 
@@ -37,7 +37,8 @@ i2s_audio:
       ignore_strapping_warning: true
 
 # Amplifier enable pin:
-# Kept internal and ALWAYS_ON to prevent audible "click/pop" noises during standby transitions.
+# Kept internal and managed dynamically by the media player to save battery and
+# eliminate idle background hiss during standby.
 switch:
   - platform: gpio
     id: audio_amp
@@ -46,7 +47,7 @@ switch:
     pin:
       number: GPIO46
       ignore_strapping_warning: true
-    restore_mode: ALWAYS_ON
+    restore_mode: ALWAYS_OFF
 
 speaker:
   - platform: i2s_audio
@@ -64,6 +65,7 @@ speaker:
 # Home Assistant Media Player entity for text-to-speech (TTS) announcements
 media_player:
   - platform: speaker
+    id: speaker_media_player
     name: "${friendly_name} Speaker"
     volume_initial: 80%
     volume_min: 0%
@@ -76,3 +78,12 @@ media_player:
       format: WAV
       sample_rate: 24000
       num_channels: 1
+
+    # Optimization D: Powers on amplifier only when audio is active, shuts off when idle
+    on_announcement:
+      - switch.turn_on: audio_amp
+    on_play:
+      - switch.turn_on: audio_amp
+    on_idle:
+      - delay: 1000ms
+      - switch.turn_off: audio_amp

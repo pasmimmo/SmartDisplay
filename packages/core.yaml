@@ -12,7 +12,7 @@ substitutions:
 esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
-  min_version: 2024.6.0
+  min_version: 2024.10.0
   name_add_mac_suffix: false
   on_boot:
     priority: -100
@@ -20,7 +20,7 @@ esphome:
       - lvgl.page.show: home_page
       - light.turn_on:
           id: display_backlight
-          transition_length: 0ms
+          transition_length: 250ms
       - script.execute: reset_sleep_timer
 
 esp32:
@@ -44,10 +44,18 @@ wifi:
   password: !secret wifi_password
 
 # Synchronize time via SNTP for the clock display
+# Optimization A: Event-driven clock updates (only on minute rollover and SNTP sync)
 time:
   - platform: sntp
     id: sntp_time
     timezone: ${timezone}
+    on_time_sync:
+      then:
+        - script.execute: update_clock_ui
+    on_time:
+      - seconds: 0
+        then:
+          - script.execute: update_clock_ui
 
 # Passive Bluetooth proxy mode:
 # Active scanning is disabled to preserve RAM and avoid 2.4GHz Wi-Fi / BT coexistence

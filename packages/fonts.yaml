@@ -41,7 +41,7 @@ font:
       - "\U0000E7F4"  # notifications
       - "\U0000E872"  # delete
 
-  # Compact icons for the standby weather widget (26px)
+  # Compact icons for the standby weather widget & notification badge (26px)
   - file: "gfonts://Material+Symbols+Outlined"
     id: font_weather
     size: 26
@@ -55,3 +55,4 @@ font:
       - "\U0000EB3B"  # ac_unit (snow / hail)
       - "\U0000E818"  # foggy
       - "\U0000E846"  # thermometer (fallback)
+      - "\U0000E7F4"  # notifications bell (standby badge)

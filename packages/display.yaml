@@ -3,7 +3,7 @@
 # ==============================================================================
 # - Display: GC9A01A 240x240 circular LCD over SPI bus (40MHz)
 # - Touchscreen: CST816D capacitive touch controller over dedicated I2C bus
-# - Backlight: Inverted LEDC PWM on GPIO42 with auto-sleep and toggle scripts
+# - Backlight: Inverted LEDC PWM on GPIO42 with smooth dimming & auto-sleep
 # ==============================================================================
 
 substitutions:
@@ -48,23 +48,26 @@ touchscreen:
     interrupt_pin: GPIO12
     reset_pin: GPIO6
 
-# Backlight PWM output (hardware signal is active LOW, so inverted: true)
+# Backlight PWM output with 1kHz frequency for flicker-free dimming
 output:
   - platform: ledc
     pin:
       number: GPIO42
       inverted: true
+    frequency: 1000Hz
     id: backlight_pwm
 
+# Dimmable monochromatic light entity exposed to Home Assistant
 light:
   - platform: monochromatic
     output: backlight_pwm
     id: display_backlight
     name: "${friendly_name} Backlight"
     restore_mode: ALWAYS_ON
+    default_transition_length: 250ms
 
 script:
-  # Inactivity sleep timer: automatically turns off the screen after sleep_timeout,
+  # Inactivity sleep timer: automatically fades out the screen after sleep_timeout,
   # but ONLY when running on battery power. Keeps screen permanently on while charging.
   - id: reset_sleep_timer
     mode: restart
@@ -80,11 +83,11 @@ script:
                 then:
                   - light.turn_off:
                       id: display_backlight
-                      transition_length: 0ms
+                      transition_length: 500ms
 
   # Display toggle handler (triggered by double-tap gesture):
   # - If charging: keeps the display on.
-  # - If on battery: toggles display backlight on/off.
+  # - If on battery: smoothly toggles display backlight on/off.
   - id: toggle_display
     mode: restart
     then:
@@ -94,7 +97,7 @@ script:
           then:
             - light.turn_on:
                 id: display_backlight
-                transition_length: 0ms
+                transition_length: 250ms
           else:
             - if:
                 condition:
@@ -103,9 +106,9 @@ script:
                   - script.stop: reset_sleep_timer
                   - light.turn_off:
                       id: display_backlight
-                      transition_length: 0ms
+                      transition_length: 250ms
                 else:
                   - light.turn_on:
                       id: display_backlight
-                      transition_length: 0ms
+                      transition_length: 250ms
                   - script.execute: reset_sleep_timer

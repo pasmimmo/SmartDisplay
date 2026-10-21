@@ -25,13 +25,24 @@ lvgl:
 
   pages:
     # --------------------------------------------------------------------------
-    # 1. HOME / STANDBY PAGE (Clock + Outdoor Weather)
+    # 1. HOME / STANDBY PAGE (Clock + Outdoor Weather + Notification Badge)
     # --------------------------------------------------------------------------
     - id: home_page
       bg_color: 0x000000
       bg_opa: COVER
       scrollable: false
       widgets:
+        # Notification Badge (Small icon above the clock when unread notifications exist)
+        - label:
+            id: notif_badge_label
+            text: ""
+            align: CENTER
+            y: -65
+            text_font: font_weather
+            text_color: 0xFFA500
+            clickable: false
+            bg_opa: TRANSP
+
         # Digital Clock (HH:MM)
         - label:
             id: clock_label
@@ -67,10 +78,12 @@ lvgl:
             clickable: false
             bg_opa: TRANSP
 
-      # Refresh weather when navigating back to home
+      # Refresh clock, weather and badge whenever navigating to home
       on_load:
         then:
+          - script.execute: update_clock_ui
           - script.execute: update_weather_ui
+          - script.execute: update_badge_ui
 
       # Swipe down from clock: Open notification history
       on_swipe_down:
@@ -284,6 +297,7 @@ lvgl:
                   id(notif_colors).clear();
                   id(current_notif_idx) = 0;
               - script.stop: notification_timeout
+              - script.execute: update_badge_ui
               - lvgl.page.show:
                   id: home_page
                   animation: FADE_IN
@@ -300,6 +314,27 @@ lvgl:
       widgets: []
 
 script:
+  # Optimization A: Updates the digital clock on home page (event-driven)
+  - id: update_clock_ui
+    mode: restart
+    then:
+      - lvgl.label.update:
+          id: clock_label
+          text: !lambda |-
+            auto now = id(sntp_time).now();
+            if (!now.is_valid()) return std::string("--:--");
+            return now.strftime("%H:%M");
+
+  # Optimization C: Updates unread notification badge indicator above clock
+  - id: update_badge_ui
+    mode: restart
+    then:
+      - lvgl.label.update:
+          id: notif_badge_label
+          text: !lambda |-
+            if (id(notif_texts).empty()) return std::string("");
+            return std::string("\uE7F4"); // Small notification bell icon
+
   # Formats device diagnostics into a multi-line status text
   - id: update_debug_page
     mode: restart
@@ -345,14 +380,3 @@ script:
               uptime_buf
             );
             return std::string(buf);
-
-# Periodically updates the digital clock every 10 seconds
-interval:
-  - interval: 10s
-    then:
-      - lvgl.label.update:
-          id: clock_label
-          text: !lambda |-
-            auto now = id(sntp_time).now();
-            if (!now.is_valid()) return std::string("--:--");
-            return now.strftime("%H:%M");
