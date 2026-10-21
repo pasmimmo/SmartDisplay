@@ -1,0 +1,68 @@
+# ==============================================================================
+# Home Assistant Script: Send Notification to MiniDisplay
+# ==============================================================================
+# Add this to your scripts.yaml in Home Assistant.
+# It exposes a convenient UI form with dropdowns for icons and colors!
+# ==============================================================================
+
+minidisplay_notify:
+  alias: "MiniDisplay: Send Notification"
+  description: "Sends a formatted notification to the ESP32-S3 MiniDisplay"
+  mode: restart
+  fields:
+    message:
+      name: "Message"
+      description: "Notification text to display"
+      required: true
+      example: "Front door opened"
+      selector:
+        text:
+    icon:
+      name: "Icon"
+      description: "Material Symbol icon identifier"
+      default: "notifications"
+      selector:
+        select:
+          options:
+            - "notifications"
+            - "home"
+            - "warning"
+            - "info"
+            - "thermometer"
+            - "window"
+            - "lightbulb"
+            - "lock"
+            - "lock_open"
+            - "sentiment_satisfied"
+            - "delete"
+    text_color:
+      name: "Color"
+      description: "Color name or Hex (#RRGGBB)"
+      default: "white"
+      selector:
+        select:
+          options:
+            - "white"
+            - "cyan"
+            - "green"
+            - "yellow"
+            - "orange"
+            - "red"
+            - "magenta"
+            - "blue"
+    timeout:
+      name: "Timeout (seconds)"
+      description: "Auto dismiss duration in seconds (0 = stays until user swipes)"
+      default: 30
+      selector:
+        number:
+          min: 0
+          max: 600
+          unit_of_measurement: "s"
+  sequence:
+    - action: esphome.minidisplay_send_notification
+      data:
+        message: "{{ message }}"
+        icon: "{{ icon }}"
+        text_color: "{{ text_color }}"
+        timeout: "{{ timeout }}"

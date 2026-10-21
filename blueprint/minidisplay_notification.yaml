@@ -1,0 +1,73 @@
+blueprint:
+  name: "MiniDisplay Smart Notification"
+  description: "Send visual notifications and optional audio alerts to your ESP32-S3 MiniDisplay"
+  domain: automation
+  input:
+    trigger_entity:
+      name: "Trigger Entity"
+      description: "Entity whose state change triggers the notification"
+      selector:
+        entity: {}
+    trigger_to_state:
+      name: "To State (optional)"
+      description: "State that triggers the notification (e.g., 'on', 'open', 'completed')"
+      default: ""
+      selector:
+        text: {}
+    message_text:
+      name: "Notification Message"
+      description: "Text message displayed on the round screen"
+      selector:
+        text: {}
+    icon_selection:
+      name: "Icon"
+      description: "Material Symbol icon displayed on screen"
+      default: "notifications"
+      selector:
+        select:
+          options:
+            - "notifications"
+            - "home"
+            - "warning"
+            - "info"
+            - "thermometer"
+            - "window"
+            - "lightbulb"
+            - "lock"
+            - "lock_open"
+            - "sentiment_satisfied"
+    color_selection:
+      name: "Accent Color"
+      default: "white"
+      selector:
+        select:
+          options:
+            - "white"
+            - "cyan"
+            - "green"
+            - "yellow"
+            - "orange"
+            - "red"
+            - "magenta"
+            - "blue"
+    timeout_seconds:
+      name: "Display Timeout (seconds)"
+      default: 30
+      selector:
+        number:
+          min: 0
+          max: 300
+          unit_of_measurement: "s"
+
+trigger:
+  - platform: state
+    entity_id: !input trigger_entity
+    to: !input trigger_to_state
+
+action:
+  - action: esphome.minidisplay_send_notification
+    data:
+      message: !input message_text
+      icon: !input icon_selection
+      text_color: !input color_selection
+      timeout: !input timeout_seconds
