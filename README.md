@@ -255,13 +255,11 @@ By placing the MiniDisplay in your living room, bedroom, or office, Home Assista
 
 ---
 
-## 💡 Hai esigenze diverse? (Fork & Contribute!)
+## 💡 Have Different Needs? (Fork & Contribute!)
 
-> *Hai un'idea per una nuova schermata, vuoi personalizzare le gesture o hai esigenze diverse per la tua domotica?* 🚀
+> *Got an idea for a custom screen, want different touch gestures, or have unique needs for your smart home?* 🚀
 > 
-> Sentiti liberissimo di **clonare o forcare questo repository**, adattarlo ai tuoi progetti e fare esperimenti! Ogni contributo, suggerimento, pull request o semplice feedback è super ben accetto: facciamo crescere questo piccolo display insieme! ❤️
-> 
-> *(Have different needs or a unique smart home setup? Feel free to clone or fork this repo, experiment, and make it your own! PRs, ideas, and feedback are always welcome!)*
+> Feel completely free to **fork or clone this repository**, tinker with the code, and make it your own! Every contribution, pull request, bug report, or idea is warmly welcomed — let's make this little circular display even better together! ❤️
 
 ---
 
