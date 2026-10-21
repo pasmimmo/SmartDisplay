@@ -112,5 +112,5 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
 #### 5. 🌐 Condivisione Community
 - [x] Preparazione scheda di sottomissione per [devices.esphome.io](https://devices.esphome.io) in [`docs/community/devices_esphome_io_submission.md`](docs/community/devices_esphome_io_submission.md)
 - [x] Redazione post di presentazione per Home Assistant Community in [`docs/community/home_assistant_community_post.md`](docs/community/home_assistant_community_post.md)
-- [ ] Sottomissione PR ufficiale al repository `esphome/devices.esphome.io`
+- [x] Sottomissione PR ufficiale al repository [`esphome/devices.esphome.io#1916`](https://github.com/esphome/devices.esphome.io/pull/1916)
 - [ ] Pubblicazione del thread sul forum di Home Assistant
