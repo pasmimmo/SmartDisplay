@@ -68,6 +68,18 @@ The audio amplifier on `GPIO46` is managed dynamically:
 
 ---
 
+## 📡 Bluetooth Proxy & Xiaomi Plant Sensors
+
+The device's built-in Bluetooth controller is configured as a **passive Bluetooth Proxy**:
+* **Target Devices:** Xiaomi Mi Flora / Flower Care soil sensors, Qingping monitors, BTHome sensors.
+* **Passive Operation:** Operates in pure listening mode (`active: false`). It intercepts broadcast BLE advertisement packets and forwards them to Home Assistant over Wi-Fi without attempting to establish active connection handshakes.
+* **Benefits:**
+  - Zero Wi-Fi coexistence interference during TTS audio streaming.
+  - Significantly reduced RAM and CPU overhead.
+  - Extended BLE coverage throughout the home for plant monitoring.
+
+---
+
 ## 🔄 Factory Firmware Backup & Recovery
 
 If you ever wish to back up the original stock firmware (`xiaozhi-esp32`) before flashing, or restore it later, use `esptool.py`:

@@ -23,7 +23,8 @@ It repurposes the popular AliExpress [Xiaozhi AI desktop box](https://it.aliexpr
   * Hardware charging detection (`GPIO41`).
   * Auto-sleep timer (default: 300s) turns off the screen **only** when running on battery; stays awake on desk when plugged in.
   * **Dynamic Audio Power**: Automatically cuts amplifier power (`GPIO46`) in standby, saving **~20mA** and eliminating background hiss.
-* **🎛️ Dimmable PWM Backlight**: 1kHz flicker-free LEDC control with smooth fade-in/fade-out transitions and Home Assistant brightness slider support.
+* **🎛️ Dimmable PWM Backlight**: 1kHz flicker-free LEDC control with smooth fade-in/fade-out transitions. Exposes a 1%–100% brightness slider in Home Assistant to easily dim the screen at night.
+* **📡 Passive Bluetooth Proxy (Xiaomi Plant Sensors)**: Acts as a localized BLE proxy for Home Assistant. Ideal for capturing passive data from **Xiaomi Mi Flora / Flower Care plant sensors**, BTHome beacons, or BLE thermometers without connection overhead or audio stuttering.
 * **👆 Natural Touch Gestures**: Browse history, toggle screen, open diagnostics, or clear notifications with intuitive swipes.
 
 ---
@@ -146,6 +147,32 @@ The firmware automatically maps Home Assistant weather states to matching Google
 
 > [!TIP]
 > **Offline / Safe Fallback:** If Home Assistant is rebooting, disconnected, or your weather integration is unavailable, the screen automatically defaults to `--°C` with a neutral thermometer icon (`\uE846`), preventing any graphical distortion or crashes.
+
+---
+
+### 4. Screen Brightness & Dimming Control
+The display backlight is controlled by a 1kHz PWM signal on `GPIO42`, exposed in Home Assistant as a dimmable light entity: **`light.minidisplay_backlight`**.
+
+* **In Home Assistant UI:** Opening the card for `light.minidisplay_backlight` gives you a **0% to 100% brightness slider**.
+* **Night Mode Automations:** You can automatically dim the display at bedtime (e.g. 20% brightness) and brighten it in the morning (100% brightness) using standard Home Assistant automations:
+  ```yaml
+  action: light.turn_on
+  target:
+    entity_id: light.minidisplay_backlight
+  data:
+    brightness_pct: 20
+    transition: 2
+  ```
+* **On-Device Gesture:** Double-tapping anywhere on the screen toggles the backlight On / Off without affecting the configured brightness level.
+
+---
+
+### 5. Bluetooth Proxy: Xiaomi Mi Flora & Plant Sensors
+The firmware includes a **passive Bluetooth Proxy** (`bluetooth_proxy: active: false`).
+
+* **Real-World Use Case:** If you have **Xiaomi Mi Flora / Flower Care** soil moisture & fertility sensors in your houseplants, or BTHome / Qingping BLE beacons, they broadcast telemetry packets periodically.
+* **How It Works:** MiniDisplay listens passively for these BLE advertisements and forwards them directly to Home Assistant over Wi-Fi, dramatically extending your smart home BLE coverage.
+* **Why Passive Mode?** Active Bluetooth connections can cause audio stuttering and consume excess RAM on the ESP32-S3. Passive mode captures all plant sensor data with zero latency, zero connection drops, and zero impact on TTS audio playback.
 
 ---
 
