@@ -1,13 +1,13 @@
 # ==============================================================================
-# Home Assistant Script: Send Notification to MiniDisplay
+# Home Assistant Script: Send Notification to SmartDisplay
 # ==============================================================================
 # Add this to your scripts.yaml in Home Assistant.
 # It exposes a convenient UI form with dropdowns for icons and colors!
 # ==============================================================================
 
-minidisplay_notify:
-  alias: "MiniDisplay: Send Notification"
-  description: "Sends a formatted notification to the ESP32-S3 MiniDisplay"
+smartdisplay_notify:
+  alias: "SmartDisplay: Send Notification"
+  description: "Sends a formatted notification to the ESP32-S3 SmartDisplay"
   mode: restart
   fields:
     message:
@@ -60,7 +60,7 @@ minidisplay_notify:
           max: 600
           unit_of_measurement: "s"
   sequence:
-    - action: esphome.minidisplay_send_notification
+    - action: esphome.smartdisplay_send_notification
       data:
         message: "{{ message }}"
         icon: "{{ icon }}"

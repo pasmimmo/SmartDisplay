@@ -9,8 +9,8 @@
 # ==============================================================================
 
 substitutions:
-  device_name: "minidisplay"
-  friendly_name: "MiniDisplay"
+  device_name: "smartdisplay"
+  friendly_name: "SmartDisplay"
   timezone: "Europe/Rome"
   weather_entity: "weather.forecast_casa"
   sleep_timeout: "300s"

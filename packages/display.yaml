@@ -7,7 +7,7 @@
 # ==============================================================================
 
 substitutions:
-  friendly_name: "MiniDisplay"
+  friendly_name: "SmartDisplay"
   sleep_timeout: "300s"
 
 spi:

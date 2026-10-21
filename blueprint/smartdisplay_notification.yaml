@@ -1,6 +1,6 @@
 blueprint:
-  name: "MiniDisplay Smart Notification"
-  description: "Send visual notifications and optional audio alerts to your ESP32-S3 MiniDisplay"
+  name: "SmartDisplay Notification"
+  description: "Send visual notifications and optional audio alerts to your ESP32-S3 SmartDisplay"
   domain: automation
   input:
     trigger_entity:
@@ -65,7 +65,7 @@ trigger:
     to: !input trigger_to_state
 
 action:
-  - action: esphome.minidisplay_send_notification
+  - action: esphome.smartdisplay_send_notification
     data:
       message: !input message_text
       icon: !input icon_selection

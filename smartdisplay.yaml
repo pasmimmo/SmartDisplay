@@ -10,8 +10,8 @@
 
 substitutions:
   # Unique device hostname and Home Assistant entity prefix
-  device_name: "minidisplay"
-  friendly_name: "MiniDisplay"
+  device_name: "smartdisplay"
+  friendly_name: "SmartDisplay"
 
   # Timezone for SNTP clock synchronization
   timezone: "Europe/Rome"

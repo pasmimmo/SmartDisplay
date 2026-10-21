@@ -1,14 +1,14 @@
 # ==============================================================================
-# Home Assistant Example Automations for MiniDisplay
+# Home Assistant Example Automations for SmartDisplay
 # ==============================================================================
-# Replace 'minidisplay' with your entity prefix if customized.
+# Replace 'smartdisplay' with your entity prefix if customized.
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
 # 1. Doorbell Pressed: Display Notification + Audio TTS Announcement
 # ------------------------------------------------------------------------------
-- id: minidisplay_doorbell_alert
-  alias: "MiniDisplay - Doorbell Pressed"
+- id: smartdisplay_doorbell_alert
+  alias: "SmartDisplay - Doorbell Pressed"
   description: "Displays a doorbell notification card and plays a voice chime on the speaker"
   trigger:
     - platform: state
@@ -16,7 +16,7 @@
       to: "on"
   action:
     # Wake screen & display visual notification card
-    - action: esphome.minidisplay_send_notification
+    - action: esphome.smartdisplay_send_notification
       data:
         message: "Someone is at the front door!"
         icon: "home"
@@ -27,21 +27,21 @@
       target:
         entity_id: tts.google_en_com # or tts.piper / your local TTS engine
       data:
-        media_player_entity_id: media_player.minidisplay_speaker
+        media_player_entity_id: media_player.smartdisplay_speaker
         message: "Someone is at the front door."
 
 # ------------------------------------------------------------------------------
 # 2. Washing Machine / Dryer Cycle Finished
 # ------------------------------------------------------------------------------
-- id: minidisplay_laundry_done
-  alias: "MiniDisplay - Laundry Finished"
+- id: smartdisplay_laundry_done
+  alias: "SmartDisplay - Laundry Finished"
   description: "Alerts when the washing machine cycle is complete"
   trigger:
     - platform: state
       entity_id: sensor.washing_machine_status
       to: "completed"
   action:
-    - action: esphome.minidisplay_send_notification
+    - action: esphome.smartdisplay_send_notification
       data:
         message: "Washing machine cycle finished! Empty the drum."
         icon: "sentiment_satisfied"
@@ -51,15 +51,15 @@
 # ------------------------------------------------------------------------------
 # 3. High Temperature / Thermostat Warning
 # ------------------------------------------------------------------------------
-- id: minidisplay_high_temp_alert
-  alias: "MiniDisplay - High Temperature Alert"
+- id: smartdisplay_high_temp_alert
+  alias: "SmartDisplay - High Temperature Alert"
   description: "Warns if indoor temperature exceeds 28°C"
   trigger:
     - platform: numeric_state
       entity_id: sensor.living_room_temperature
       above: 28.0
   action:
-    - action: esphome.minidisplay_send_notification
+    - action: esphome.smartdisplay_send_notification
       data:
         message: "Living Room is very hot (above 28°C)!"
         icon: "thermometer"
@@ -69,8 +69,8 @@
 # ------------------------------------------------------------------------------
 # 4. Window Left Open Warning (e.g. When Rain Forecasted)
 # ------------------------------------------------------------------------------
-- id: minidisplay_window_open_rain
-  alias: "MiniDisplay - Rain Warning Window Open"
+- id: smartdisplay_window_open_rain
+  alias: "SmartDisplay - Rain Warning Window Open"
   description: "Alerts if windows are open when rain begins"
   trigger:
     - platform: state
@@ -81,7 +81,7 @@
       entity_id: binary_sensor.bedroom_window
       state: "on"
   action:
-    - action: esphome.minidisplay_send_notification
+    - action: esphome.smartdisplay_send_notification
       data:
         message: "It started raining and the bedroom window is OPEN!"
         icon: "window"
@@ -91,15 +91,15 @@
 # ------------------------------------------------------------------------------
 # 5. Houseplant Needs Water (Xiaomi Mi Flora via BLE Proxy)
 # ------------------------------------------------------------------------------
-- id: minidisplay_plant_watering_alert
-  alias: "MiniDisplay - Plant Watering Alert"
+- id: smartdisplay_plant_watering_alert
+  alias: "SmartDisplay - Plant Watering Alert"
   description: "Alerts when a houseplant's soil moisture drops below threshold"
   trigger:
     - platform: numeric_state
       entity_id: sensor.monstera_soil_moisture
       below: 20
   action:
-    - action: esphome.minidisplay_send_notification
+    - action: esphome.smartdisplay_send_notification
       data:
         message: "Your Monstera needs water! Moisture is low (18%)."
         icon: "home"

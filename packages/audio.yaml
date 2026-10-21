@@ -8,7 +8,7 @@
 # ==============================================================================
 
 substitutions:
-  friendly_name: "MiniDisplay"
+  friendly_name: "SmartDisplay"
 
 # Dedicated I2C bus for the ES8311 audio codec
 i2c:

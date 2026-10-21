@@ -1,4 +1,4 @@
-# 📋 MiniDisplay ESP32-S3 - Piano di Lavoro & TODO
+# 📋 SmartDisplay ESP32-S3 - Piano di Lavoro & TODO
 
 Progetto firmware open-source basato su ESPHome e LVGL per smart display circolare ESP32-S3 1.28" (SP-ESP32-S3-1.28-BOX) integrato con Home Assistant.
 
@@ -32,7 +32,7 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
   - [x] `packages/weather.yaml`: Integrazione meteo HA con icone e temperature
   - [x] `packages/ui.yaml`: Pagine Home (orologio + meteo), Notifiche, Debug, Dialog cancellazione, Transizione
 - [x] Refactoring generale: commenti in inglese in tutti i file, rimozione ridondanze, riordino degli script di gestione display
-- [x] Sincronizzazione continua della copia monolitica all-in-one (`minidisplay_standalone.yaml`)
+- [x] Sincronizzazione continua della copia monolitica all-in-one (`smartdisplay_standalone.yaml`)
 
 ---
 
@@ -50,7 +50,7 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
   - [x] Integrata entità `weather.forecast_casa` tramite `packages/weather.yaml`
   - [x] Aggiunti simboli meteo (`sunny`, `rainy`, `cloudy`, `thunderstorm`, `snow`, `fog`, `night`) in `packages/fonts.yaml`
   - [x] Adattato layout circolare: orologio a `y: -20`, icona meteo (`x: -28`, `y: 44`) e temperatura (`x: 18`, `y: 44`)
-  - [x] Aggiornato sia il codice modulare sia `minidisplay_standalone.yaml`
+  - [x] Aggiornato sia il codice modulare sia `smartdisplay_standalone.yaml`
 - [x] **Ottimizzazione A - Orologio a evento**: Aggiornamento al secondo esatto (`on_time: seconds: 0` + `on_time_sync` + `on_load`), rimosso polling continuo ogni 10s
 - [x] **Ottimizzazione B - Dimming & Transizioni**: Frequenza PWM 1kHz per dimming senza sfarfallio, transizioni morbide a dissolvenza (fade out 500ms allo standby, 250ms al risveglio)
 - [x] **Ottimizzazione C - Badge Notifiche non lette**: Campanella d'avviso ambra sopra l'orologio (`y: -65`) che appare automaticamente quando ci sono notifiche nella coda e scompare quando vengono cancellate
@@ -62,7 +62,7 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
 - [x] Creare cartella `examples/home-assistant/`
 - [x] Automazioni d'uso reale in [`examples/home-assistant/automations.yaml`](examples/home-assistant/automations.yaml) (campanello con TTS, fine lavatrice, allarme alta temperatura, finestra aperta con pioggia)
 - [x] Script riutilizzabile con interfaccia e campi formattati in [`examples/home-assistant/script_send_notification.yaml`](examples/home-assistant/script_send_notification.yaml)
-- [x] Blueprint visuale per Home Assistant in [`blueprint/minidisplay_notification.yaml`](blueprint/minidisplay_notification.yaml)
+- [x] Blueprint visuale per Home Assistant in [`blueprint/smartdisplay_notification.yaml`](blueprint/smartdisplay_notification.yaml)
 
 ---
 
