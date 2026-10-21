@@ -105,10 +105,12 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
 #### 4. 📸 Visual Showcase & Media Reali
 - [x] Cartella `.github/assets/` con specifiche multimediali e guida asset
 - [x] Foto reali del device in funzione (`smartdisplay_standby_clock.jpg`, `smartdisplay_notification_card.jpg`, `smartdisplay_clear_dialog.jpg`, `smartdisplay_system_info.jpg`)
-- [x] Galleria fotografica integrata nel `README.md`
+- [x] Galleria fotografica integrata nel `README.md` e nella Wiki
+- [x] Immagine banner per anteprima social su GitHub (`.github/assets/banner.png` 1280x640)
 - [ ] Registrazione GIF animate del display funzionante per `README.md` (schermata standby, animazione notifica, gesture touch)
-- [ ] Immagine banner per anteprima social su GitHub (`.github/assets/banner.png`)
 
 #### 5. 🌐 Condivisione Community
-- [ ] Sottomissione scheda su [devices.esphome.io](https://devices.esphome.io) per la board SP-ESP32-S3-1.28-BOX
-- [ ] Post di presentazione su Home Assistant Community (sezione *Share your Projects*)
+- [x] Preparazione scheda di sottomissione per [devices.esphome.io](https://devices.esphome.io) in [`docs/community/devices_esphome_io_submission.md`](docs/community/devices_esphome_io_submission.md)
+- [x] Redazione post di presentazione per Home Assistant Community in [`docs/community/home_assistant_community_post.md`](docs/community/home_assistant_community_post.md)
+- [ ] Sottomissione PR ufficiale al repository `esphome/devices.esphome.io`
+- [ ] Pubblicazione del thread sul forum di Home Assistant

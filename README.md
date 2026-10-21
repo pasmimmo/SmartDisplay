@@ -1,5 +1,9 @@
 # 🔮 SmartDisplay ESP32-S3
 
+<p align="center">
+  <img src=".github/assets/banner.png" alt="SmartDisplay ESP32-S3 Banner" width="100%" />
+</p>
+
 [![ESPHome CI](https://github.com/pasmimmo/SmartDisplay/actions/workflows/ci.yml/badge.svg)](https://github.com/pasmimmo/SmartDisplay/actions/workflows/ci.yml)
 [![ESPHome Version](https://img.shields.io/badge/ESPHome-2024.10%2B-blue.svg)](https://esphome.io)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Compatible-41BDF5.svg)](https://home-assistant.io)
@@ -310,7 +314,7 @@ We believe in documenting the engineering rationale behind hardware and software
 │   ├── workflows/ci.yml         # GitHub Actions: yamllint + ESPHome config verification
 │   ├── ISSUE_TEMPLATE/          # Structured YAML forms for Bug Reports & Feature Requests
 │   ├── pull_request_template.md # PR submission checklist & verification protocol
-│   └── assets/                  # Real hardware photos, diagrams & visual assets
+│   └── assets/                  # Banner, real hardware photos, diagrams & visual assets
 ├── packages/                    # Modular ESPHome packages
 │   ├── core.yaml                # ESP32-S3, PSRAM, Wi-Fi, OTA, SNTP time
 │   ├── display.yaml             # GC9A01A (80MHz SPI), CST816D touch, Backlight PWM
@@ -328,7 +332,8 @@ We believe in documenting the engineering rationale behind hardware and software
 ├── docs/                        # Formal documentation & engineering records
 │   ├── QUICKSTART.md            # 3-step rapid setup guide
 │   ├── HARDWARE.md              # 19-GPIO pinout, schematics, flash backup guide
-│   └── ARCHITECTURE_DECISIONS.md # Detailed ADR records (ADR-01 to ADR-05)
+│   ├── ARCHITECTURE_DECISIONS.md # Detailed ADR records (ADR-01 to ADR-05)
+│   └── community/               # Community post & devices.esphome.io submission templates
 ├── smartdisplay.yaml             # Modular entrypoint (with substitutions)
 ├── smartdisplay_standalone.yaml  # Standalone all-in-one file (single-file install)
 ├── secrets.yaml.example         # Credentials template
@@ -336,7 +341,7 @@ We believe in documenting the engineering rationale behind hardware and software
 ├── .yamllint.yml                # YAML linting configuration
 ├── CONTRIBUTING.md              # Contributor guide, branching model, Conventional Commits
 ├── CODE_OF_CONDUCT.md           # Contributor Covenant v2.1
-├── RELEASE_NOTES.md             # v1.0.0 release changelog
+├── RELEASE_NOTES.md             # Release changelog
 └── LICENSE                      # MIT License
 ```
 
