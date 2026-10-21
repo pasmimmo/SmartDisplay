@@ -51,9 +51,10 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
   - [x] Aggiunti simboli meteo (`sunny`, `rainy`, `cloudy`, `thunderstorm`, `snow`, `fog`, `night`) in `packages/fonts.yaml`
   - [x] Adattato layout circolare: orologio a `y: -20`, icona meteo (`x: -28`, `y: 44`) e temperatura (`x: 18`, `y: 44`)
   - [x] Aggiornato sia il codice modulare sia `minidisplay_standalone.yaml`
-- [ ] Controllo luminosità dimmerabile da Home Assistant o modalità notturna automatica
-- [ ] Segnale sonoro / beep opzionale alla ricezione di una notifica (tramite speaker I2S)
-- [ ] Indicatore visuale rapido (es. piccolo badge/pallino se ci sono notifiche non lette)
+- [x] **Ottimizzazione A - Orologio a evento**: Aggiornamento al secondo esatto (`on_time: seconds: 0` + `on_time_sync` + `on_load`), rimosso polling continuo ogni 10s
+- [x] **Ottimizzazione B - Dimming & Transizioni**: Frequenza PWM 1kHz per dimming senza sfarfallio, transizioni morbide a dissolvenza (fade out 500ms allo standby, 250ms al risveglio)
+- [x] **Ottimizzazione C - Badge Notifiche non lette**: Campanella d'avviso ambra sopra l'orologio (`y: -65`) che appare automaticamente quando ci sono notifiche nella coda e scompare quando vengono cancellate
+- [x] **Ottimizzazione D - Risparmio Batteria Audio**: Amplificatore GPIO46 gestito dinamicamente (acceso solo durante annunci/riproduzione, spento con delay 1s in standby per eliminare fruscio e risparmiare ~20mA)
 
 ---
 
