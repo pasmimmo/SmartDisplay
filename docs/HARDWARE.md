@@ -22,42 +22,19 @@ This document provides a technical overview of the **SP-ESP32-S3-1.28-BOX** hard
 
 ```mermaid
 flowchart LR
-    subgraph ESP32S3["ESP32-S3 SoC (16MB Flash / 8MB Octal PSRAM)"]
-        CPU["Dual-Core Xtensa LX7 @ 240MHz"]
-        SPI["SPI Master (80MHz)"]
-        I2C0["I2C Bus 0 (Audio)"]
-        I2C1["I2C Bus 1 (Touch)"]
-        I2S["I2S Digital Audio"]
-        ADC["ADC1 Ch0"]
-        LEDC["LEDC PWM (1kHz)"]
-        GPIO_CTRL["GPIO Logic & Sensing"]
-    end
+    ESP["🧠 <b>ESP32-S3 SoC</b><br>240MHz • 16MB Flash • 8MB PSRAM"]
 
-    subgraph Peripherals["Display & Touch Panel"]
-        LCD["GC9A01A 1.28' Round LCD<br>GPIO2 (MOSI) / GPIO4 (CLK)<br>GPIO5 (CS) / GPIO47 (DC) / GPIO38 (RST)"]
-        Touch["CST816D Touch Controller<br>GPIO7 (SCL) / GPIO11 (SDA)<br>GPIO6 (RST) / GPIO12 (INT)"]
-        Backlight["Backlight LED Driver<br>GPIO42 (Inverted PWM)"]
-    end
+    Display["🖥️ <b>Round LCD</b> (GC9A01A)<br>SPI: GPIO2, 4, 5, 38, 47"]
+    Backlight["💡 <b>Backlight PWM</b><br>LEDC: GPIO42 (1kHz)"]
+    Touch["👆 <b>Touchscreen</b> (CST816D)<br>I2C: GPIO7, 11 • INT: GPIO12"]
+    Audio["🔊 <b>Audio & Speaker</b> (ES8311)<br>I2S: GPIO8, 9, 16, 45 • Amp: GPIO46"]
+    Power["🔋 <b>Battery & USB-C</b><br>ADC: GPIO1 • VBUS: GPIO41"]
 
-    subgraph Sound["Audio Subsystem"]
-        DAC["Everest ES8311 Codec<br>GPIO14/15 (I2C 0x18)<br>GPIO9/16/45 (I2S Clocks)"]
-        Amp["Class-D Speaker Amp<br>GPIO46 (Power Shutdown)<br>GPIO8 (I2S Audio In)"]
-    end
-
-    subgraph PowerSystem["Power & Battery Management"]
-        Batt["1S LiPo Battery (3.7V - 4.2V)<br>GPIO1 (2:1 Divider ADC)"]
-        USBC["USB-C 5V Input & Charger<br>GPIO41 (VBUS Presence)"]
-    end
-
-    SPI --> LCD
-    LEDC --> Backlight
-    I2C1 <--> Touch
-    I2C0 <--> DAC
-    I2S --> DAC
-    I2S --> Amp
-    GPIO_CTRL -->|"GPIO46 Amp Enable"| Amp
-    Batt --> ADC
-    USBC -->|"GPIO41 High"| GPIO_CTRL
+    ESP --> Display
+    ESP --> Backlight
+    ESP <--> Touch
+    ESP --> Audio
+    Power --> ESP
 ```
 
 ---

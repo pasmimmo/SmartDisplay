@@ -7,33 +7,13 @@ Turn your AliExpress **ESP32-S3 1.28" Round Display Box** into a **Home Assistan
 ## 🔄 How It Works at a Glance
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor User as 👤 You
-    participant HA as 🏠 Home Assistant
-    participant ESP as 🔮 MiniDisplay (ESP32-S3)
-    participant LCD as 🎨 1.28" Round LCD
-    participant Audio as 🔊 ES8311 Speaker
+flowchart LR
+    E["1️⃣ <b>Event Occurs</b><br>Doorbell, laundry, leak"]
+    H["2️⃣ <b>Home Assistant</b><br>Sends notification"]
+    D["3️⃣ <b>MiniDisplay Wakes</b><br>Shows card & speaks TTS"]
+    T["4️⃣ <b>Touch to Browse</b><br>Swipe history or dismiss"]
 
-    Note over HA,ESP: Idle Standby (Always-on when plugged into USB-C)
-    HA->>ESP: Sync SNTP Time & Live Weather
-    ESP->>LCD: Display Standby Clock + Outdoor Weather & Temp
-
-    rect rgb(30, 42, 56)
-    Note over HA,ESP: Automation Trigger (Doorbell / Appliance / Leaks)
-    HA->>ESP: Call esphome.minidisplay_send_notification
-    par Visual Alert
-        ESP->>LCD: Wake / Fade on backlight (LEDC PWM)
-        ESP->>LCD: Display notification icon, colored text & counter
-    and Audio Alert (Optional)
-        HA->>Audio: Play TTS voice announcement or chime
-    end
-    end
-
-    Note over User,LCD: Interactive Touch Navigation
-    User->>LCD: Swipe Left / Right (Browse 10-card history)
-    User->>LCD: Swipe Down (Confirm & clear all notifications)
-    User->>LCD: Long Press (View Wi-Fi, IP & Battery diagnostics)
+    E --> H --> D --> T
 ```
 
 ---
