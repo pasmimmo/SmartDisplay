@@ -1,0 +1,37 @@
+name: ESPHome CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate ESPHome Configurations
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 📦 Install ESPHome
+        run: |
+          pip install --upgrade pip
+          pip install esphome
+
+      - name: 🔐 Prepare Mock Secrets
+        run: cp secrets.yaml.example secrets.yaml
+
+      - name: 🧪 Validate Modular Config (smartdisplay.yaml)
+        run: esphome config smartdisplay.yaml
+
+      - name: 🧪 Validate Standalone Config (smartdisplay_standalone.yaml)
+        run: esphome config smartdisplay_standalone.yaml

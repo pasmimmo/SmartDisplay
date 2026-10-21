@@ -1,5 +1,6 @@
 # 🔮 SmartDisplay ESP32-S3
 
+[![ESPHome CI](https://github.com/pasmimmo/SmartDisplay/actions/workflows/ci.yml/badge.svg)](https://github.com/pasmimmo/SmartDisplay/actions/workflows/ci.yml)
 [![ESPHome Version](https://img.shields.io/badge/ESPHome-2024.10%2B-blue.svg)](https://esphome.io)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Compatible-41BDF5.svg)](https://home-assistant.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
