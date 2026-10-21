@@ -1,0 +1,35 @@
+# ============================================================
+# FONT & ICONE
+# ============================================================
+
+font:
+  - file: "gfonts://Roboto"
+    id: font_clock
+    size: 70
+    glyphs: "0123456789:"
+
+  - file: "gfonts://Roboto"
+    id: font_text
+    size: 20
+    glyphs: " !\"#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÀÁÈÉÌÍÒÓÙÚàáèéìíòóùúÄÖÜäöü°–—_[]{}"
+
+  - file: "gfonts://Roboto"
+    id: font_debug
+    size: 14
+    glyphs: " !\"#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÀÁÈÉÌÍÒÓÙÚàáèéìíòóùúÄÖÜäöü°–—_[]{}"
+
+  - file: "gfonts://Material+Symbols+Outlined"
+    id: font_icon
+    size: 52
+    glyphs:
+      - "\U0000E002"  # warning
+      - "\U0000E88E"  # info
+      - "\U0000E813"  # sentiment_satisfied
+      - "\U0000E88A"  # home
+      - "\U0000F088"  # window
+      - "\U0000E846"  # thermometer
+      - "\U0000E90F"  # lightbulb
+      - "\U0000E897"  # lock
+      - "\U0000E898"  # lock_open
+      - "\U0000E7F4"  # notifications
+      - "\U0000E872"  # delete

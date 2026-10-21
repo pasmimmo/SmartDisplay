@@ -1,0 +1,311 @@
+# ============================================================
+# INTERFACCIA UTENTE LVGL & PAGINE
+# ============================================================
+
+lvgl:
+  displays:
+    - my_display
+
+  buffer_size: 12%
+  log_level: WARN
+
+  touchscreens:
+    - touchscreen_id: my_touch
+      long_press_time: 800ms
+      long_press_repeat_time: 65535ms
+
+  pages:
+    # ----------------------------------------------------------
+    # HOME PAGE (Orologio)
+    # ----------------------------------------------------------
+    - id: home_page
+      bg_color: 0x000000
+      bg_opa: COVER
+      scrollable: false
+      widgets:
+        - label:
+            id: clock_label
+            text: "--:--"
+            align: CENTER
+            text_font: font_clock
+            text_color: 0xFFFFFF
+            clickable: false
+            bg_opa: TRANSP
+
+      on_swipe_down:
+        then:
+          - if:
+              condition:
+                lambda: 'return !id(notif_texts).empty();'
+              then:
+                - lambda: 'id(current_notif_idx) = 0;'
+                - script.execute: show_notification_transition
+                - script.execute: reset_sleep_timer
+
+      on_double_click:
+        then:
+          - script.execute: toggle_display
+
+      on_long_press:
+        then:
+          - light.turn_on:
+              id: display_backlight
+              transition_length: 0ms
+          - script.stop: reset_sleep_timer
+          - script.execute: update_debug_page
+          - lvgl.page.show:
+              id: debug_page
+              animation: MOVE_TOP
+              time: 180ms
+          - script.execute: reset_sleep_timer
+
+    # ----------------------------------------------------------
+    # NOTIFICHE (Icona + Testo + Contatore)
+    # ----------------------------------------------------------
+    - id: notifications_page
+      bg_color: 0x000000
+      bg_opa: COVER
+      scrollable: false
+      widgets:
+        - label:
+            id: notif_icon_label
+            text: ""
+            align: TOP_MID
+            y: 10
+            width: 80
+            height: 58
+            text_align: CENTER
+            text_font: font_icon
+            text_color: 0xFFFFFF
+            clickable: false
+            bg_opa: TRANSP
+
+        - label:
+            id: notif_text_label
+            text: "Nessuna notifica"
+            align: CENTER
+            y: 18
+            width: 210
+            height: 128
+            long_mode: WRAP
+            text_align: CENTER
+            text_font: font_text
+            text_line_space: 4
+            text_color: 0xFFFFFF
+            clickable: false
+            bg_opa: TRANSP
+
+        - label:
+            id: notif_counter_label
+            text: "0/0"
+            align: BOTTOM_MID
+            y: -18
+            text_font: font_debug
+            text_color: 0x888888
+            clickable: false
+            bg_opa: TRANSP
+
+      on_swipe_left:
+        then:
+          - if:
+              condition:
+                lambda: 'return !id(notif_texts).empty() && id(current_notif_idx) < ((int) id(notif_texts).size() - 1);'
+              then:
+                - lambda: 'id(current_notif_idx)++;'
+                - script.execute: show_notification_transition
+                - script.execute: reset_sleep_timer
+
+      on_swipe_right:
+        then:
+          - if:
+              condition:
+                lambda: 'return !id(notif_texts).empty() && id(current_notif_idx) > 0;'
+              then:
+                - lambda: 'id(current_notif_idx)--;'
+                - script.execute: show_notification_transition
+                - script.execute: reset_sleep_timer
+
+      on_swipe_up:
+        then:
+          - lvgl.page.show:
+              id: home_page
+              animation: MOVE_TOP
+              time: 180ms
+          - script.execute: reset_sleep_timer
+
+      on_swipe_down:
+        then:
+          - script.stop: notification_timeout
+          - lvgl.page.show:
+              id: delete_page
+              animation: MOVE_BOTTOM
+              time: 180ms
+          - script.execute: reset_sleep_timer
+
+    # ----------------------------------------------------------
+    # DEBUG (Diagnostica Hardware & Rete)
+    # ----------------------------------------------------------
+    - id: debug_page
+      bg_color: 0x000000
+      bg_opa: COVER
+      scrollable: false
+      widgets:
+        - label:
+            id: debug_info_label
+            text: "Caricamento..."
+            align: CENTER
+            width: 220
+            height: 215
+            long_mode: WRAP
+            text_align: LEFT
+            text_font: font_debug
+            text_color: 0xFFFFFF
+            clickable: false
+            bg_opa: TRANSP
+
+      on_load:
+        then:
+          - script.execute: update_debug_page
+
+      on_swipe_up:
+        then:
+          - lvgl.page.show:
+              id: home_page
+              animation: MOVE_BOTTOM
+              time: 180ms
+          - script.execute: reset_sleep_timer
+
+      on_double_click:
+        then:
+          - script.execute: toggle_display
+
+    # ----------------------------------------------------------
+    # CONFERMA CANCELLAZIONE NOTIFICHE
+    # ----------------------------------------------------------
+    - id: delete_page
+      bg_color: 0x000000
+      bg_opa: COVER
+      scrollable: false
+      widgets:
+        - label:
+            text: "Vuoi cancellare\nle notifiche?"
+            align: TOP_MID
+            y: 55
+            text_align: CENTER
+            text_font: font_text
+            text_color: 0xFFFFFF
+            clickable: false
+            bg_opa: TRANSP
+
+        # Pulsante NO (Verde: Annulla / Mantieni notifiche)
+        - button:
+            x: 38
+            y: 130
+            width: 68
+            height: 50
+            bg_color: 0x009900
+            widgets:
+              - label:
+                  text: "NO"
+                  align: CENTER
+                  text_font: font_text
+                  text_color: 0xFFFFFF
+            on_click:
+              - lvgl.page.show:
+                  id: notifications_page
+                  animation: MOVE_TOP
+                  time: 120ms
+              - script.execute: reset_sleep_timer
+
+        # Pulsante SI (Rosso: Azione distruttiva / Cancella)
+        - button:
+            x: 134
+            y: 130
+            width: 68
+            height: 50
+            bg_color: 0xCC0000
+            widgets:
+              - label:
+                  text: "SI"
+                  align: CENTER
+                  text_font: font_text
+                  text_color: 0xFFFFFF
+            on_click:
+              - lambda: |-
+                  id(notif_texts).clear();
+                  id(notif_icons).clear();
+                  id(notif_colors).clear();
+                  id(current_notif_idx) = 0;
+              - script.stop: notification_timeout
+              - lvgl.page.show:
+                  id: home_page
+                  animation: FADE_IN
+                  time: 120ms
+              - script.execute: reset_sleep_timer
+
+    # ----------------------------------------------------------
+    # TRANSIZIONE BIANCA
+    # ----------------------------------------------------------
+    - id: transition_page
+      bg_color: 0xFFFFFF
+      bg_opa: COVER
+      scrollable: false
+      widgets: []
+
+script:
+  # Aggiorna la schermata di debug
+  - id: update_debug_page
+    mode: restart
+    then:
+      - lvgl.label.update:
+          id: debug_info_label
+          text: !lambda |-
+            std::string ip = id(ip_address).state.empty() ? "-" : id(ip_address).state;
+            std::string ssid = id(wifi_ssid).state.empty() ? "-" : id(wifi_ssid).state;
+            const char *charging = id(charging_sensor).state ? "SI" : "NO";
+
+            char uptime_buf[24];
+            uint32_t total = (uint32_t) id(uptime_sensor).state;
+            uint32_t days = total / 86400UL;
+            total %= 86400UL;
+            uint32_t hours = total / 3600UL;
+            total %= 3600UL;
+            uint32_t mins = total / 60UL;
+            uint32_t secs = total % 60UL;
+            snprintf(
+              uptime_buf,
+              sizeof(uptime_buf),
+              "%ud %02uh %02um %02us",
+              days, hours, mins, secs
+            );
+
+            char buf[768];
+            snprintf(
+              buf,
+              sizeof(buf),
+              "BOARD\nSP-ESP32-S3-1.28-BOX\n\n"
+              "DEVICE\n%s\nESPHome %s\n\n"
+              "NETWORK\nIP %s\nWi-Fi %s\nRSSI %.0f dBm\n\n"
+              "POWER\nBatteria %.0f %%\nIn carica %s\n\n"
+              "UPTIME\n%s",
+              App.get_name().c_str(),
+              ESPHOME_VERSION,
+              ip.c_str(),
+              ssid.c_str(),
+              id(wifi_signal_db).state,
+              id(battery_percentage).state,
+              charging,
+              uptime_buf
+            );
+            return std::string(buf);
+
+# Aggiornamento orologio ogni 10s
+interval:
+  - interval: 10s
+    then:
+      - lvgl.label.update:
+          id: clock_label
+          text: !lambda |-
+            auto now = id(sntp_time).now();
+            if (!now.is_valid()) return std::string("--:--");
+            return now.strftime("%H:%M");

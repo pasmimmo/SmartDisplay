@@ -1,0 +1,54 @@
+# ============================================================
+# DISPLAY GC9A01A & TOUCHSCREEN CST816
+# ============================================================
+
+spi:
+  - id: spi_bus
+    clk_pin: GPIO4
+    mosi_pin: GPIO2
+
+display:
+  - platform: mipi_spi
+    spi_id: spi_bus
+    model: GC9A01A
+    data_rate: 40MHz
+    cs_pin: GPIO5
+    dc_pin: GPIO47
+    reset_pin: GPIO38
+    invert_colors: true
+    dimensions: 240x240
+    transform:
+      mirror_x: true
+      mirror_y: false
+      swap_xy: false
+    id: my_display
+    auto_clear_enabled: false
+    update_interval: never
+
+i2c:
+  - id: i2c_touch
+    sda: GPIO11
+    scl: GPIO7
+    scan: false
+    frequency: 400kHz
+
+touchscreen:
+  - platform: cst816
+    id: my_touch
+    i2c_id: i2c_touch
+    interrupt_pin: GPIO12
+    reset_pin: GPIO6
+
+output:
+  - platform: ledc
+    pin:
+      number: GPIO42
+      inverted: true
+    id: backlight_pwm
+
+light:
+  - platform: monochromatic
+    output: backlight_pwm
+    id: display_backlight
+    name: "${friendly_name} Luce Schermo"
+    restore_mode: ALWAYS_ON

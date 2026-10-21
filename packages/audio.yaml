@@ -1,0 +1,66 @@
+# ============================================================
+# AUDIO ES8311 & I2S MEDIA PLAYER
+# ============================================================
+
+i2c:
+  - id: i2c_audio
+    sda: GPIO15
+    scl: GPIO14
+    scan: true
+    frequency: 400kHz
+
+audio_dac:
+  - platform: es8311
+    id: es8311_dac
+    i2c_id: i2c_audio
+    address: 0x18
+    sample_rate: 24000
+    bits_per_sample: 16bit
+    use_mclk: true
+
+i2s_audio:
+  - id: i2s_out
+    i2s_mclk_pin: GPIO16
+    i2s_bclk_pin:
+      number: GPIO9
+    i2s_lrclk_pin:
+      number: GPIO45
+      ignore_strapping_warning: true
+
+switch:
+  - platform: gpio
+    id: audio_amp
+    name: "${friendly_name} Amplificatore Audio"
+    internal: true
+    pin:
+      number: GPIO46
+      ignore_strapping_warning: true
+    restore_mode: ALWAYS_ON
+
+speaker:
+  - platform: i2s_audio
+    id: speaker_hardware
+    i2s_audio_id: i2s_out
+    i2s_dout_pin: GPIO8
+    dac_type: external
+    audio_dac: es8311_dac
+    sample_rate: 24000
+    bits_per_sample: 16bit
+    channel: mono
+    buffer_duration: 50ms
+    timeout: 500ms
+
+media_player:
+  - platform: speaker
+    name: "${friendly_name} Altoparlante"
+    volume_initial: 80%
+    volume_min: 0%
+    volume_max: 100%
+    volume_increment: 5%
+    buffer_size: 65536
+    task_stack_in_psram: true
+    announcement_pipeline:
+      speaker: speaker_hardware
+      format: WAV
+      sample_rate: 24000
+      num_channels: 1

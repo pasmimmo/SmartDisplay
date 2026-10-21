@@ -1,0 +1,221 @@
+# ============================================================
+# GESTIONE NOTIFICHE & TIMER
+# ============================================================
+
+globals:
+  - id: notif_texts
+    type: std::vector<std::string>
+    restore_value: no
+  - id: notif_icons
+    type: std::vector<std::string>
+    restore_value: no
+  - id: notif_colors
+    type: std::vector<uint32_t>
+    restore_value: no
+  - id: current_notif_idx
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+api:
+  reboot_timeout: 0s
+  actions:
+    - action: send_notification
+      variables:
+        message: string
+        icon: string
+        text_color: string
+        timeout: int
+      then:
+        - lambda: |-
+            uint32_t rgb = 0xFFFFFF;
+
+            // Colori: accetta #RRGGBB, 0xRRGGBB, RRGGBB oppure nomi comuni.
+            if (!text_color.empty()) {
+              if (text_color[0] == '#') {
+                rgb = strtoul(text_color.c_str() + 1, nullptr, 16) & 0xFFFFFF;
+              } else {
+                char *end = nullptr;
+                rgb = strtoul(text_color.c_str(), &end, 0) & 0xFFFFFF;
+                if (end == text_color.c_str()) {
+                  rgb = strtoul(text_color.c_str(), &end, 16) & 0xFFFFFF;
+                  if (end == text_color.c_str()) {
+                    if (text_color == "red") rgb = 0xFF0000;
+                    else if (text_color == "green") rgb = 0x00FF00;
+                    else if (text_color == "blue") rgb = 0x3399FF;
+                    else if (text_color == "yellow") rgb = 0xFFFF00;
+                    else if (text_color == "orange") rgb = 0xFF8800;
+                    else if (text_color == "cyan") rgb = 0x00FFFF;
+                    else if (text_color == "magenta") rgb = 0xFF00FF;
+                    else if (text_color == "black") rgb = 0x000000;
+                    else if (text_color == "white") rgb = 0xFFFFFF;
+                    else rgb = 0xFFFFFF;
+                  }
+                }
+              }
+            }
+
+            // LIFO: inseriamo sempre la nuova notifica in testa.
+            id(notif_texts).insert(id(notif_texts).begin(), message);
+            id(notif_icons).insert(id(notif_icons).begin(), icon);
+            id(notif_colors).insert(id(notif_colors).begin(), rgb);
+
+            // Mantieni solo le ultime 10.
+            while (id(notif_texts).size() > 10) {
+              id(notif_texts).pop_back();
+              id(notif_icons).pop_back();
+              id(notif_colors).pop_back();
+            }
+
+            id(current_notif_idx) = 0;
+
+            if (timeout < 0) timeout = 0;
+
+            ESP_LOGI(
+              "notify",
+              "Notifica: icon=%s timeout=%d message=%s",
+              icon.c_str(), (int) timeout, message.c_str()
+            );
+
+        - script.stop: notification_timeout
+        - script.execute: show_notification_transition
+        - light.turn_on:
+            id: display_backlight
+            transition_length: 0ms
+        - script.execute: reset_sleep_timer
+        - if:
+            condition:
+              lambda: 'return timeout > 0;'
+            then:
+              - script.execute:
+                  id: notification_timeout
+                  timeout_sec: !lambda 'return timeout;'
+
+script:
+  # Timer display: solo quando siamo a batteria (spegnimento dopo 300s di inattivita').
+  - id: reset_sleep_timer
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return !id(charging_sensor).state;'
+          then:
+            - delay: 300s
+            - if:
+                condition:
+                  lambda: 'return !id(charging_sensor).state;'
+                then:
+                  - light.turn_off:
+                      id: display_backlight
+                      transition_length: 0ms
+
+  # Doppio tap: durante la carica il display resta sempre acceso; a batteria commuta on/off.
+  - id: toggle_display
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return id(charging_sensor).state;'
+          then:
+            - light.turn_on:
+                id: display_backlight
+                transition_length: 0ms
+          else:
+            - if:
+                condition:
+                  lambda: 'return id(display_backlight).current_values.is_on();'
+                then:
+                  - script.stop: reset_sleep_timer
+                  - light.turn_off:
+                      id: display_backlight
+                      transition_length: 0ms
+                else:
+                  - light.turn_on:
+                      id: display_backlight
+                      transition_length: 0ms
+                  - script.execute: reset_sleep_timer
+
+  # Aggiorna i widget della notifica corrente.
+  - id: update_notification_ui
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return id(notif_texts).empty();'
+          then:
+            - lvgl.label.update:
+                id: notif_icon_label
+                text: ""
+            - lvgl.label.update:
+                id: notif_text_label
+                text: "Nessuna notifica"
+                text_color: 0xFFFFFF
+            - lvgl.label.update:
+                id: notif_counter_label
+                text: "0/0"
+          else:
+            - lvgl.label.update:
+                id: notif_icon_label
+                text: !lambda |-
+                  const auto &icon = id(notif_icons)[id(current_notif_idx)];
+                  if (icon == "warning") return std::string("\uE002");
+                  if (icon == "info") return std::string("\uE88E");
+                  if (icon == "sentiment_satisfied") return std::string("\uE813");
+                  if (icon == "home") return std::string("\uE88A");
+                  if (icon == "window") return std::string("\uF088");
+                  if (icon == "thermometer") return std::string("\uE846");
+                  if (icon == "lightbulb") return std::string("\uE90F");
+                  if (icon == "lock") return std::string("\uE897");
+                  if (icon == "lock_open") return std::string("\uE898");
+                  if (icon == "notifications") return std::string("\uE7F4");
+                  if (icon == "delete") return std::string("\uE872");
+                  return std::string("\uE7F4");
+                text_color: !lambda |-
+                  const uint32_t rgb = id(notif_colors)[id(current_notif_idx)];
+                  return Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+
+            - lvgl.label.update:
+                id: notif_text_label
+                text: !lambda 'return id(notif_texts)[id(current_notif_idx)];'
+                text_color: !lambda |-
+                  const uint32_t rgb = id(notif_colors)[id(current_notif_idx)];
+                  return Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+
+            - lvgl.label.update:
+                id: notif_counter_label
+                text: !lambda |-
+                  char buf[16];
+                  snprintf(
+                    buf,
+                    sizeof(buf),
+                    "%d/%d",
+                    id(current_notif_idx) + 1,
+                    (int) id(notif_texts).size()
+                  );
+                  return std::string(buf);
+
+  # Transizione visiva rapida tra notifiche.
+  - id: show_notification_transition
+    mode: restart
+    then:
+      - lvgl.page.show:
+          id: transition_page
+          animation: NONE
+      - delay: 80ms
+      - script.execute: update_notification_ui
+      - lvgl.page.show:
+          id: notifications_page
+          animation: NONE
+
+  # Timeout automatico per tornare alla home dopo N secondi.
+  - id: notification_timeout
+    mode: restart
+    parameters:
+      timeout_sec: int
+    then:
+      - delay: !lambda 'return timeout_sec * 1000;'
+      - lvgl.page.show:
+          id: home_page
+          animation: FADE_IN
+          time: 120ms
+      - script.execute: reset_sleep_timer

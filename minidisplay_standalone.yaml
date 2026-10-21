@@ -1,0 +1,807 @@
+esphome:
+  name: minidisplay
+  friendly_name: MiniDisplay
+  min_version: 2026.8.2
+  name_add_mac_suffix: false
+  on_boot:
+    priority: -100
+    then:
+      - lvgl.page.show: home_page
+      - light.turn_on:
+          id: display_backlight
+          transition_length: 0ms
+      - script.execute: reset_sleep_timer
+
+esp32:
+  variant: esp32s3
+  framework:
+    type: esp-idf
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+logger:
+  level: INFO
+
+api:
+  reboot_timeout: 0s
+  actions:
+    - action: send_notification
+      variables:
+        message: string
+        icon: string
+        text_color: string
+        timeout: int
+      then:
+        - lambda: |-
+            uint32_t rgb = 0xFFFFFF;
+
+            // Colori: accetta #RRGGBB, 0xRRGGBB, RRGGBB oppure nomi comuni.
+            if (!text_color.empty()) {
+              if (text_color[0] == '#') {
+                rgb = strtoul(text_color.c_str() + 1, nullptr, 16) & 0xFFFFFF;
+              } else {
+                char *end = nullptr;
+                rgb = strtoul(text_color.c_str(), &end, 0) & 0xFFFFFF;
+                if (end == text_color.c_str()) {
+                  rgb = strtoul(text_color.c_str(), &end, 16) & 0xFFFFFF;
+                  if (end == text_color.c_str()) {
+                    if (text_color == "red") rgb = 0xFF0000;
+                    else if (text_color == "green") rgb = 0x00FF00;
+                    else if (text_color == "blue") rgb = 0x3399FF;
+                    else if (text_color == "yellow") rgb = 0xFFFF00;
+                    else if (text_color == "orange") rgb = 0xFF8800;
+                    else if (text_color == "cyan") rgb = 0x00FFFF;
+                    else if (text_color == "magenta") rgb = 0xFF00FF;
+                    else if (text_color == "black") rgb = 0x000000;
+                    else if (text_color == "white") rgb = 0xFFFFFF;
+                    else rgb = 0xFFFFFF;
+                  }
+                }
+              }
+            }
+
+            // LIFO: inseriamo sempre la nuova notifica in testa.
+            id(notif_texts).insert(id(notif_texts).begin(), message);
+            id(notif_icons).insert(id(notif_icons).begin(), icon);
+            id(notif_colors).insert(id(notif_colors).begin(), rgb);
+
+            // Mantieni solo le ultime 10.
+            while (id(notif_texts).size() > 10) {
+              id(notif_texts).pop_back();
+              id(notif_icons).pop_back();
+              id(notif_colors).pop_back();
+            }
+
+            id(current_notif_idx) = 0;
+
+            if (timeout < 0) timeout = 0;
+
+            ESP_LOGI(
+              "notify",
+              "Notifica: icon=%s timeout=%d message=%s",
+              icon.c_str(), (int) timeout, message.c_str()
+            );
+
+        - script.stop: notification_timeout
+        - script.execute: show_notification_transition
+        - light.turn_on:
+            id: display_backlight
+            transition_length: 0ms
+        - script.execute: reset_sleep_timer
+        - if:
+            condition:
+              lambda: 'return timeout > 0;'
+            then:
+              - script.execute:
+                  id: notification_timeout
+                  timeout_sec: !lambda 'return timeout;'
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# ============================================================
+# ORA
+# ============================================================
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: Europe/Rome
+
+# ============================================================
+# NOTIFICHE
+# ============================================================
+globals:
+  - id: notif_texts
+    type: std::vector<std::string>
+    restore_value: no
+  - id: notif_icons
+    type: std::vector<std::string>
+    restore_value: no
+  - id: notif_colors
+    type: std::vector<uint32_t>
+    restore_value: no
+  - id: current_notif_idx
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+# ============================================================
+# SCRIPT UI / ENERGIA
+# ============================================================
+script:
+  # Timer display: solo quando siamo a batteria.
+  - id: reset_sleep_timer
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return !id(charging_sensor).state;'
+          then:
+            - delay: 300s
+            - if:
+                condition:
+                  lambda: 'return !id(charging_sensor).state;'
+                then:
+                  - light.turn_off:
+                      id: display_backlight
+                      transition_length: 0ms
+
+  # Doppio tap: durante la carica il display resta sempre acceso.
+  - id: toggle_display
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return id(charging_sensor).state;'
+          then:
+            - light.turn_on:
+                id: display_backlight
+                transition_length: 0ms
+          else:
+            - if:
+                condition:
+                  lambda: 'return id(display_backlight).current_values.is_on();'
+                then:
+                  - script.stop: reset_sleep_timer
+                  - light.turn_off:
+                      id: display_backlight
+                      transition_length: 0ms
+                else:
+                  - light.turn_on:
+                      id: display_backlight
+                      transition_length: 0ms
+                  - script.execute: reset_sleep_timer
+
+  # Aggiorna i tre widget della notifica corrente.
+  - id: update_notification_ui
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return id(notif_texts).empty();'
+          then:
+            - lvgl.label.update:
+                id: notif_icon_label
+                text: ""
+            - lvgl.label.update:
+                id: notif_text_label
+                text: "Nessuna notifica"
+                text_color: 0xFFFFFF
+            - lvgl.label.update:
+                id: notif_counter_label
+                text: "0/0"
+          else:
+            - lvgl.label.update:
+                id: notif_icon_label
+                text: !lambda |-
+                  const auto &icon = id(notif_icons)[id(current_notif_idx)];
+                  if (icon == "warning") return std::string("\uE002");
+                  if (icon == "info") return std::string("\uE88E");
+                  if (icon == "sentiment_satisfied") return std::string("\uE813");
+                  if (icon == "home") return std::string("\uE88A");
+                  if (icon == "window") return std::string("\uF088");
+                  if (icon == "thermometer") return std::string("\uE846");
+                  if (icon == "lightbulb") return std::string("\uE90F");
+                  if (icon == "lock") return std::string("\uE897");
+                  if (icon == "lock_open") return std::string("\uE898");
+                  if (icon == "notifications") return std::string("\uE7F4");
+                  if (icon == "delete") return std::string("\uE872");
+                  return std::string("\uE7F4");
+                text_color: !lambda |-
+                  const uint32_t rgb = id(notif_colors)[id(current_notif_idx)];
+                  return Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+
+            - lvgl.label.update:
+                id: notif_text_label
+                text: !lambda 'return id(notif_texts)[id(current_notif_idx)];'
+                text_color: !lambda |-
+                  const uint32_t rgb = id(notif_colors)[id(current_notif_idx)];
+                  return Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+
+            - lvgl.label.update:
+                id: notif_counter_label
+                text: !lambda |-
+                  char buf[16];
+                  snprintf(
+                    buf,
+                    sizeof(buf),
+                    "%d/%d",
+                    id(current_notif_idx) + 1,
+                    (int) id(notif_texts).size()
+                  );
+                  return std::string(buf);
+
+  # Flash bianco tra una notifica e la successiva.
+  - id: show_notification_transition
+    mode: restart
+    then:
+      - lvgl.page.show:
+          id: transition_page
+          animation: NONE
+      - delay: 80ms
+      - script.execute: update_notification_ui
+      - lvgl.page.show:
+          id: notifications_page
+          animation: NONE
+
+  # Timeout della notifica.
+  - id: notification_timeout
+    mode: restart
+    parameters:
+      timeout_sec: int
+    then:
+      - delay: !lambda 'return timeout_sec * 1000;'
+      - lvgl.page.show:
+          id: home_page
+          animation: FADE_IN
+          time: 120ms
+      - script.execute: reset_sleep_timer
+
+  # Pagina debug aggiornata quando viene aperta.
+  - id: update_debug_page
+    mode: restart
+    then:
+      - lvgl.label.update:
+          id: debug_info_label
+          text: !lambda |-
+            std::string ip = id(ip_address).state.empty() ? "-" : id(ip_address).state;
+            std::string ssid = id(wifi_ssid).state.empty() ? "-" : id(wifi_ssid).state;
+            const char *charging = id(charging_sensor).state ? "SI" : "NO";
+
+            char uptime_buf[24];
+            uint32_t total = (uint32_t) id(uptime_sensor).state;
+            uint32_t days = total / 86400UL;
+            total %= 86400UL;
+            uint32_t hours = total / 3600UL;
+            total %= 3600UL;
+            uint32_t mins = total / 60UL;
+            uint32_t secs = total % 60UL;
+            snprintf(
+              uptime_buf,
+              sizeof(uptime_buf),
+              "%ud %02uh %02um %02us",
+              days, hours, mins, secs
+            );
+
+            char buf[768];
+            snprintf(
+              buf,
+              sizeof(buf),
+              "BOARD\nSP-ESP32-S3-1.28-BOX\n\n"
+              "DEVICE\n%s\nESPHome %s\n\n"
+              "NETWORK\nIP %s\nWi-Fi %s\nRSSI %.0f dBm\n\n"
+              "POWER\nBatteria %.0f %%\nIn carica %s\n\n"
+              "UPTIME\n%s",
+              App.get_name().c_str(),
+              ESPHOME_VERSION,
+              ip.c_str(),
+              ssid.c_str(),
+              id(wifi_signal_db).state,
+              id(battery_percentage).state,
+              charging,
+              uptime_buf
+            );
+            return std::string(buf);
+
+# ============================================================
+# SENSORI
+# ============================================================
+sensor:
+  - platform: adc
+    pin: GPIO1
+    id: battery_percentage
+    name: "Batteria"
+    attenuation: 12db
+    update_interval: 60s
+    filters:
+      - multiply: 2.0
+      - calibrate_linear:
+          - 3.3 -> 0
+          - 4.2 -> 100
+      - clamp:
+          min_value: 0
+          max_value: 100
+
+  - platform: wifi_signal
+    id: wifi_signal_db
+    name: "WiFi Signal"
+    update_interval: 30s
+    entity_category: diagnostic
+
+  - platform: uptime
+    id: uptime_sensor
+    name: "Uptime"
+    update_interval: 60s
+    entity_category: diagnostic
+
+binary_sensor:
+  - platform: gpio
+    pin: GPIO41
+    id: charging_sensor
+    name: "In Ricarica"
+    device_class: battery_charging
+    on_press:
+      - script.stop: reset_sleep_timer
+      - light.turn_on:
+          id: display_backlight
+          transition_length: 0ms
+    on_release:
+      - script.execute: reset_sleep_timer
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      id: ip_address
+      name: "IP Address"
+      entity_category: diagnostic
+    ssid:
+      id: wifi_ssid
+      name: "WiFi SSID"
+      entity_category: diagnostic
+    mac_address:
+      id: wifi_mac
+      name: "WiFi MAC Address"
+      entity_category: diagnostic
+
+  - platform: version
+    name: "ESPHome Version"
+    id: esphome_version_text
+    hide_timestamp: true
+    entity_category: diagnostic
+
+# ============================================================
+# BACKLIGHT
+# ============================================================
+output:
+  - platform: ledc
+    pin:
+      number: GPIO42
+      inverted: true
+    id: backlight_pwm
+
+light:
+  - platform: monochromatic
+    output: backlight_pwm
+    id: display_backlight
+    name: "Luce Schermo"
+    restore_mode: ALWAYS_ON
+
+# ============================================================
+# AUDIO ES8311 / I2S
+# ============================================================
+i2c:
+  - id: i2c_touch
+    sda: GPIO11
+    scl: GPIO7
+    scan: false
+    frequency: 400kHz
+
+  - id: i2c_audio
+    sda: GPIO15
+    scl: GPIO14
+    scan: true
+    frequency: 400kHz
+
+audio_dac:
+  - platform: es8311
+    id: es8311_dac
+    i2c_id: i2c_audio
+    address: 0x18
+    sample_rate: 24000
+    bits_per_sample: 16bit
+    use_mclk: true
+
+i2s_audio:
+  - id: i2s_out
+    i2s_mclk_pin: GPIO16
+    i2s_bclk_pin:
+      number: GPIO9
+    i2s_lrclk_pin:
+      number: GPIO45
+      ignore_strapping_warning: true
+
+switch:
+  - platform: gpio
+    id: audio_amp
+    name: "Amplificatore Audio"
+    internal: true
+    pin:
+      number: GPIO46
+      ignore_strapping_warning: true
+    restore_mode: ALWAYS_ON
+
+speaker:
+  - platform: i2s_audio
+    id: speaker_hardware
+    i2s_audio_id: i2s_out
+    i2s_dout_pin: GPIO8
+    dac_type: external
+    audio_dac: es8311_dac
+    sample_rate: 24000
+    bits_per_sample: 16bit
+    channel: mono
+    buffer_duration: 50ms
+    timeout: 500ms
+
+media_player:
+  - platform: speaker
+    name: "Altoparlante MiniDisplay"
+    volume_initial: 80%
+    volume_min: 0%
+    volume_max: 100%
+    volume_increment: 5%
+    buffer_size: 65536
+    task_stack_in_psram: true
+    announcement_pipeline:
+      speaker: speaker_hardware
+      format: WAV
+      sample_rate: 24000
+      num_channels: 1
+
+# ============================================================
+# DISPLAY GC9A01A / TOUCH CST816D
+# ============================================================
+spi:
+  - id: spi_bus
+    clk_pin: GPIO4
+    mosi_pin: GPIO2
+
+display:
+  - platform: mipi_spi
+    spi_id: spi_bus
+    model: GC9A01A
+    data_rate: 40MHz
+    cs_pin: GPIO5
+    dc_pin: GPIO47
+    reset_pin: GPIO38
+    invert_colors: true
+    dimensions: 240x240
+    transform:
+      mirror_x: true
+      mirror_y: false
+      swap_xy: false
+    id: my_display
+    auto_clear_enabled: false
+    update_interval: never
+
+touchscreen:
+  - platform: cst816
+    id: my_touch
+    i2c_id: i2c_touch
+    interrupt_pin: GPIO12
+    reset_pin: GPIO6
+
+# ============================================================
+# FONT
+# ============================================================
+font:
+  - file: "gfonts://Roboto"
+    id: font_clock
+    size: 70
+    glyphs: "0123456789:"
+
+  - file: "gfonts://Roboto"
+    id: font_text
+    size: 20
+    glyphs: " !\"#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÀÁÈÉÌÍÒÓÙÚàáèéìíòóùúÄÖÜäöü°–—_[]{}"
+
+  - file: "gfonts://Roboto"
+    id: font_debug
+    size: 14
+    glyphs: " !\"#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÀÁÈÉÌÍÒÓÙÚàáèéìíòóùúÄÖÜäöü°–—_[]{}"
+
+  - file: "gfonts://Material+Symbols+Outlined"
+    id: font_icon
+    size: 52
+    glyphs:
+      - "\U0000E002"
+      - "\U0000E88E"
+      - "\U0000E813"
+      - "\U0000E88A"
+      - "\U0000F088"
+      - "\U0000E846"
+      - "\U0000E90F"
+      - "\U0000E897"
+      - "\U0000E898"
+      - "\U0000E7F4"
+      - "\U0000E872"
+
+# ============================================================
+# LVGL
+# ============================================================
+lvgl:
+  displays:
+    - my_display
+
+  # 12% usa un buffer molto più piccolo, lasciando il framebuffer principale
+  # in RAM interna quando possibile e riducendo il traffico inutile.
+  buffer_size: 12%
+
+  log_level: WARN
+
+  touchscreens:
+    - touchscreen_id: my_touch
+      long_press_time: 800ms
+      long_press_repeat_time: 65535ms
+
+  pages:
+    # ----------------------------------------------------------
+    # HOME
+    # ----------------------------------------------------------
+    - id: home_page
+      bg_color: 0x000000
+      bg_opa: COVER
+      scrollable: false
+      widgets:
+        - label:
+            id: clock_label
+            text: "--:--"
+            align: CENTER
+            text_font: font_clock
+            text_color: 0xFFFFFF
+            clickable: false
+            bg_opa: TRANSP
+
+      on_swipe_down:
+        then:
+          - if:
+              condition:
+                lambda: 'return !id(notif_texts).empty();'
+              then:
+                - lambda: 'id(current_notif_idx) = 0;'
+                - script.execute: show_notification_transition
+                - script.execute: reset_sleep_timer
+
+      on_double_click:
+        then:
+          - script.execute: toggle_display
+
+      on_long_press:
+        then:
+          - light.turn_on:
+              id: display_backlight
+              transition_length: 0ms
+          - script.stop: reset_sleep_timer
+          - script.execute: update_debug_page
+          - lvgl.page.show:
+              id: debug_page
+              animation: MOVE_TOP
+              time: 180ms
+          - script.execute: reset_sleep_timer
+
+    # ----------------------------------------------------------
+    # NOTIFICHE
+    # ----------------------------------------------------------
+    - id: notifications_page
+      bg_color: 0x000000
+      bg_opa: COVER
+      scrollable: false
+      widgets:
+        - label:
+            id: notif_icon_label
+            text: ""
+            align: TOP_MID
+            y: 10
+            width: 80
+            height: 58
+            text_align: CENTER
+            text_font: font_icon
+            text_color: 0xFFFFFF
+            clickable: false
+            bg_opa: TRANSP
+
+        - label:
+            id: notif_text_label
+            text: "Nessuna notifica"
+            align: CENTER
+            y: 18
+            width: 210
+            height: 128
+            long_mode: WRAP
+            text_align: CENTER
+            text_font: font_text
+            text_line_space: 4
+            text_color: 0xFFFFFF
+            clickable: false
+            bg_opa: TRANSP
+
+        - label:
+            id: notif_counter_label
+            text: "0/0"
+            align: BOTTOM_MID
+            y: -18
+            text_font: font_debug
+            text_color: 0x888888
+            clickable: false
+            bg_opa: TRANSP
+
+      on_swipe_left:
+        then:
+          - if:
+              condition:
+                lambda: 'return !id(notif_texts).empty() && id(current_notif_idx) < ((int) id(notif_texts).size() - 1);'
+              then:
+                - lambda: 'id(current_notif_idx)++;'
+                - script.execute: show_notification_transition
+                - script.execute: reset_sleep_timer
+
+      on_swipe_right:
+        then:
+          - if:
+              condition:
+                lambda: 'return !id(notif_texts).empty() && id(current_notif_idx) > 0;'
+              then:
+                - lambda: 'id(current_notif_idx)--;'
+                - script.execute: show_notification_transition
+                - script.execute: reset_sleep_timer
+
+      on_swipe_up:
+        then:
+          - lvgl.page.show:
+              id: home_page
+              animation: MOVE_TOP
+              time: 180ms
+          - script.execute: reset_sleep_timer
+
+      on_swipe_down:
+        then:
+          - script.stop: notification_timeout
+          - lvgl.page.show:
+              id: delete_page
+              animation: MOVE_BOTTOM
+              time: 180ms
+          - script.execute: reset_sleep_timer
+
+    # ----------------------------------------------------------
+    # DEBUG
+    # ----------------------------------------------------------
+    - id: debug_page
+      bg_color: 0x000000
+      bg_opa: COVER
+      scrollable: false
+      widgets:
+        - label:
+            id: debug_info_label
+            text: "Caricamento..."
+            align: CENTER
+            width: 220
+            height: 215
+            long_mode: WRAP
+            text_align: LEFT
+            text_font: font_debug
+            text_color: 0xFFFFFF
+            clickable: false
+            bg_opa: TRANSP
+
+      on_load:
+        then:
+          - script.execute: update_debug_page
+
+      on_swipe_up:
+        then:
+          - lvgl.page.show:
+              id: home_page
+              animation: MOVE_BOTTOM
+              time: 180ms
+          - script.execute: reset_sleep_timer
+
+      on_double_click:
+        then:
+          - script.execute: toggle_display
+
+    # ----------------------------------------------------------
+    # CONFERMA CANCELLAZIONE
+    # ----------------------------------------------------------
+    - id: delete_page
+      bg_color: 0x000000
+      bg_opa: COVER
+      scrollable: false
+      widgets:
+        - label:
+            text: "Vuoi cancellare\nle notifiche?"
+            align: TOP_MID
+            y: 55
+            text_align: CENTER
+            text_font: font_text
+            text_color: 0xFFFFFF
+            clickable: false
+            bg_opa: TRANSP
+
+        - button:
+            x: 38
+            y: 130
+            width: 68
+            height: 50
+            bg_color: 0x009900
+            widgets:
+              - label:
+                  text: "NO"
+                  align: CENTER
+                  text_font: font_text
+                  text_color: 0xFFFFFF
+            on_click:
+              - lvgl.page.show:
+                  id: notifications_page
+                  animation: MOVE_TOP
+                  time: 120ms
+              - script.execute: reset_sleep_timer
+
+        - button:
+            x: 134
+            y: 130
+            width: 68
+            height: 50
+            bg_color: 0xCC0000
+            widgets:
+              - label:
+                  text: "SI"
+                  align: CENTER
+                  text_font: font_text
+                  text_color: 0xFFFFFF
+            on_click:
+              - lambda: |-
+                  id(notif_texts).clear();
+                  id(notif_icons).clear();
+                  id(notif_colors).clear();
+                  id(current_notif_idx) = 0;
+              - script.stop: notification_timeout
+              - lvgl.page.show:
+                  id: home_page
+                  animation: FADE_IN
+                  time: 120ms
+              - script.execute: reset_sleep_timer
+
+    # ----------------------------------------------------------
+    # FLASH BIANCO
+    # ----------------------------------------------------------
+    - id: transition_page
+      bg_color: 0xFFFFFF
+      bg_opa: COVER
+      scrollable: false
+      widgets: []
+
+# ============================================================
+# CLOCK UPDATE
+# ============================================================
+interval:
+  - interval: 10s
+    then:
+      - lvgl.label.update:
+          id: clock_label
+          text: !lambda |-
+            auto now = id(sntp_time).now();
+            if (!now.is_valid()) return std::string("--:--");
+            return now.strftime("%H:%M");
+            
+esp32_ble_tracker:
+  scan_parameters:
+    active: false
+
+bluetooth_proxy:
+  active: false

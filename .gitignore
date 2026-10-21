@@ -1,0 +1,19 @@
+# ESPHome build output & temporary files
+.esphome/
+.pio/
+.pioenvs/
+
+# Sensitive data
+secrets.yaml
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor directories
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+

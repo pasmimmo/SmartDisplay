@@ -1,0 +1,19 @@
+# ============================================================
+# SP-ESP32-S3-1.28-BOX Smart Display
+# Configurazione Principale ESPHome (Architettura Modulare)
+# ============================================================
+
+substitutions:
+  device_name: "minidisplay"
+  friendly_name: "MiniDisplay"
+  timezone: "Europe/Rome"
+
+# Inclusione dei singoli moduli hardware e software
+packages:
+  core: !include packages/core.yaml
+  display: !include packages/display.yaml
+  audio: !include packages/audio.yaml
+  sensors: !include packages/sensors.yaml
+  fonts: !include packages/fonts.yaml
+  notifications: !include packages/notifications.yaml
+  ui: !include packages/ui.yaml
