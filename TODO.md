@@ -59,23 +59,25 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
 ---
 
 ### Fase 4: Esempi di Utilizzo & Automazioni Home Assistant
-- [ ] Creare cartella `examples/home-assistant/`
-- [ ] Automazioni d'uso reale (lavatrice/asciugatrice, campanello, allarme perimetrale, meteo)
-- [ ] Script riutilizzabile HA con validazione parametri
-- [ ] Blueprint per Home Assistant
+- [x] Creare cartella `examples/home-assistant/`
+- [x] Automazioni d'uso reale in [`examples/home-assistant/automations.yaml`](examples/home-assistant/automations.yaml) (campanello con TTS, fine lavatrice, allarme alta temperatura, finestra aperta con pioggia)
+- [x] Script riutilizzabile con interfaccia e campi formattati in [`examples/home-assistant/script_send_notification.yaml`](examples/home-assistant/script_send_notification.yaml)
+- [x] Blueprint visuale per Home Assistant in [`blueprint/minidisplay_notification.yaml`](blueprint/minidisplay_notification.yaml)
 
 ---
 
 ### Fase 5: Documentazione Doppia (Lapidaria & Tecnica)
-- [ ] **Guida Lapidaria / Quickstart (`docs/QUICKSTART.md`)**:
-  - Compra il device -> Inserisci Wi-Fi -> Flash -> Usa automazione
-- [ ] **Documentazione Tecnica Completa (`docs/HARDWARE.md` & `README.md`)**:
-  - Foto e link AliExpress del modello `SP-ESP32-S3-1.28-BOX`
-  - Link alla repo del firmware originale di serie
-  - Tabella pinout completa (GC9A01A, CST816D, ES8311, ADC, GPIO)
-  - Tabella gesture ed elenco icone supportate
-  - Istruzioni di flashing & ripristino
-- [ ] Licenza (MIT)
+- [x] **Guida Lapidaria / Quickstart in 3 passi** in [`docs/QUICKSTART.md`](docs/QUICKSTART.md):
+  - Compra il device -> Inserisci Wi-Fi -> Flash -> Invia notifica
+- [x] **Documentazione Tecnica Completa** in [`docs/HARDWARE.md`](docs/HARDWARE.md):
+  - Riconoscimento hardware `SP-ESP32-S3-1.28-BOX` e link AliExpress
+  - Riferimento al firmware stock cinese `78/xiaozhi-esp32`
+  - Tabella pinout completa a 19 GPIO (SPI, I2C, I2S, ADC, PWM, power)
+  - Architettura di gestione energetica e calibrazione batteria
+  - Istruzioni di backup e ripristino firmware di serie con `esptool.py`
+- [x] **README.md principale di livello GitHub**:
+  - Badge professionali, panoramica, tabella icone e colori, diagramma delle gesture touch, albero del repository
+- [x] Licenza MIT in [`LICENSE`](LICENSE)
 
 ---
 
