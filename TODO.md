@@ -9,9 +9,7 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
 ```
 [Fase 1: Riorganizzazione Codice] ──> [Fase 2: Test & Fix] ──> [Fase 3: Nuove Migliorie]
                                                                         │
-[Fase 5: Documentazione Doppia]  <── [Fase 4: Esempi Automazioni] <─────┘
-           │
-           └───> [Fase 6: Estensioni Future (HA Custom Component / UI)]
+[Fase 5: Documentazione & Rilascio] <── [Fase 4: Esempi Automazioni] <──┘
 ```
 
 ---
@@ -81,8 +79,3 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
 - [x] **README.md principale di livello GitHub**:
   - Badge professionali, panoramica, tabella icone e colori, diagramma delle gesture touch, albero del repository
 - [x] Licenza MIT in [`LICENSE`](LICENSE)
-
----
-
-### Fase 6: Estensioni Future
-- [ ] Custom Component / Lovelace Card guidata per Home Assistant
