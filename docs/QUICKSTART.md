@@ -18,15 +18,18 @@ Turn your AliExpress **ESP32-S3 1.28" Round Display Box** into a **Home Assistan
 3. Choose a name (e.g., `minidisplay`) and skip the wizard.
 4. Click **Edit** on the newly created device card.
 5. Replace everything with the full content of [`minidisplay_standalone.yaml`](../minidisplay_standalone.yaml).
-6. Customize the top `substitutions:` if needed:
+6. Customize the top `substitutions:` with your local settings:
    ```yaml
    substitutions:
      device_name: "minidisplay"
      friendly_name: "MiniDisplay"
      timezone: "Europe/Rome"
-     weather_entity: "weather.forecast_casa" # Your Home Assistant weather entity
+     weather_entity: "weather.forecast_casa" # Change to your HA weather entity (e.g. weather.home)
      sleep_timeout: "300s"                   # Auto screen-off when on battery
    ```
+   > [!NOTE]
+   > **Weather Entity:** If you don't know your weather entity ID, check **Developer Tools > States** in Home Assistant and search for `weather.`. If your entity is named differently (e.g., `weather.home`), change it above. If Home Assistant is offline, the clock will cleanly show `--°C` without crashing.
+
 7. Ensure your Wi-Fi credentials exist in your `secrets.yaml`:
    ```yaml
    wifi_ssid: "YOUR_WIFI_SSID"

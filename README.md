@@ -117,6 +117,38 @@ data:
 
 ---
 
+### 3. Standby Weather Widget Setup
+The standby clock screen features a live outdoor weather widget displaying your local condition icon and temperature.
+
+#### Configuring Your Weather Entity
+In `minidisplay.yaml` (or `minidisplay_standalone.yaml`), simply set `weather_entity` in `substitutions:` to match your Home Assistant weather entity ID:
+
+```yaml
+substitutions:
+  # Replace with your actual Home Assistant weather entity (e.g. weather.home, weather.forecast_home)
+  weather_entity: "weather.forecast_casa"
+```
+
+#### Weather Conditions & Dynamic Thematic Colors
+The firmware automatically maps Home Assistant weather states to matching Google Material Symbols and accent colors:
+
+| Home Assistant Weather State | Icon | Theme Accent Color | Visual Representation |
+| :--- | :---: | :--- | :--- |
+| `sunny` | `\uE81A` | Warm Amber (`#FFB300`) | ☀️ Sunny / Clear Day |
+| `clear-night` | `\uF159` | Night Sky Blue (`#80D8FF`) | 🌙 Clear Night Sky |
+| `partlycloudy` | `\uF172` | Golden Yellow (`#FFCA28`) | ⛅ Sun behind clouds |
+| `cloudy` | `\uF15C` | Soft Grey (`#B0BEC5`) | ☁️ Overcast clouds |
+| `rainy`, `pouring` | `\uF176` | Rain Blue (`#42A5F5`) | 🌧️ Rain showers |
+| `lightning`, `lightning-rainy` | `\uEBDB` | Vivid Yellow (`#FFD54F`) | ⛈️ Thunderstorm |
+| `snowy`, `snowy-rainy`, `hail` | `\uEB3B` | Ice Cyan (`#E0F7FA`) | ❄️ Snow / Ice |
+| `fog` | `\uE818` | Mist Grey (`#90A4AE`) | 🌫️ Fog & Mist |
+| `windy`, `windy-variant` | `\uF15C` | Slate Grey (`#B0BEC5`) | 💨 High winds |
+
+> [!TIP]
+> **Offline / Safe Fallback:** If Home Assistant is rebooting, disconnected, or your weather integration is unavailable, the screen automatically defaults to `--°C` with a neutral thermometer icon (`\uE846`), preventing any graphical distortion or crashes.
+
+---
+
 ## 👆 Touch Gestures
 
 ```
