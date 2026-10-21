@@ -75,6 +75,9 @@ data:
 
 The screen will wake up, smoothly fade on, and display your notification card!
 
+> [!TIP]
+> **Automate Visually with Blueprints:** Instead of writing YAML automations by hand, you can import our ready-made [Notification Blueprint](../blueprint/minidisplay_notification.yaml) directly via **Settings > Automations & Scenes > Blueprints > Import Blueprint**!
+
 ---
 
 ### Gestures Cheat Sheet

@@ -219,6 +219,28 @@ By placing the MiniDisplay in your living room, bedroom, or office, Home Assista
 
 ---
 
+### 6. Visual Automation Blueprint (One-Click Import)
+Prefer creating automations with a friendly UI rather than writing YAML? We provide a pre-built blueprint!
+
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fpasmimmo%2FSmartDisplay%2Fblob%2Fdevelop%2Fblueprint%2Fminidisplay_notification.yaml)
+
+#### Option A: Direct Import via UI (Recommended)
+1. In Home Assistant, navigate to **Settings** > **Automations & Scenes** > **Blueprints** tab.
+2. Click **Import Blueprint** (bottom-right button).
+3. Paste the GitHub Blueprint URL:
+   ```
+   https://github.com/pasmimmo/SmartDisplay/blob/develop/blueprint/minidisplay_notification.yaml
+   ```
+4. Click **Preview Blueprint** and confirm **Import**.
+5. Click **Create Automation** to pick your trigger, icon, color, and message using dropdown selectors!
+
+#### Option B: Manual File Copy
+Copy [`blueprint/minidisplay_notification.yaml`](blueprint/minidisplay_notification.yaml) directly into your Home Assistant directory:
+```
+/config/blueprints/automation/minidisplay/minidisplay_notification.yaml
+```
+Then go to **Developer Tools** > **YAML** and click **Automations** to reload.
+
 ## 👆 Touch Gestures
 
 ```mermaid
