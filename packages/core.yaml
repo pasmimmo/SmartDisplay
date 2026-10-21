@@ -5,8 +5,8 @@
 # ==============================================================================
 
 substitutions:
-  device_name: "minidisplay"
-  friendly_name: "MiniDisplay"
+  device_name: "smartdisplay"
+  friendly_name: "SmartDisplay"
   timezone: "Europe/Rome"
 
 esphome:

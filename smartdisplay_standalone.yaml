@@ -9,8 +9,8 @@
 # ==============================================================================
 
 substitutions:
-  device_name: "minidisplay"
-  friendly_name: "MiniDisplay"
+  device_name: "smartdisplay"
+  friendly_name: "SmartDisplay"
   timezone: "Europe/Rome"
   weather_entity: "weather.forecast_casa"
   sleep_timeout: "300s"
@@ -209,6 +209,8 @@ script:
                       id: display_backlight
                       transition_length: 250ms
                 else:
+                  - lvgl.page.show:
+                      id: home_page
                   - light.turn_on:
                       id: display_backlight
                       transition_length: 250ms
@@ -512,6 +514,11 @@ light:
     name: "${friendly_name} Backlight"
     restore_mode: ALWAYS_ON
     default_transition_length: 250ms
+    on_turn_off:
+      then:
+        - script.stop: notification_timeout
+        - lvgl.page.show:
+            id: home_page
 
 # ==============================================================================
 # AUDIO ES8311 & I2S MEDIA PLAYER
@@ -862,6 +869,10 @@ lvgl:
               time: 180ms
           - script.execute: reset_sleep_timer
 
+      on_double_click:
+        then:
+          - script.execute: toggle_display
+
     # --------------------------------------------------------------------------
     # 3. DIAGNOSTICS & DEBUG
     # --------------------------------------------------------------------------
@@ -996,6 +1007,10 @@ lvgl:
                   animation: FADE_IN
                   time: 120ms
               - script.execute: reset_sleep_timer
+
+      on_double_click:
+        then:
+          - script.execute: toggle_display
 
     # --------------------------------------------------------------------------
     # 5. WHITE FLASH TRANSITION

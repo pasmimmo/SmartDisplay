@@ -7,7 +7,7 @@
 # ==============================================================================
 
 substitutions:
-  friendly_name: "MiniDisplay"
+  friendly_name: "SmartDisplay"
 
 sensor:
   # Onboard battery voltage via ADC with 2:1 resistive divider

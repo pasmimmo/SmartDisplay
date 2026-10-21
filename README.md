@@ -1,11 +1,11 @@
-# 🔮 MiniDisplay ESP32-S3
+# 🔮 SmartDisplay ESP32-S3
 
 [![ESPHome Version](https://img.shields.io/badge/ESPHome-2024.10%2B-blue.svg)](https://esphome.io)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Compatible-41BDF5.svg)](https://home-assistant.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Hardware](https://img.shields.io/badge/Hardware-SP--ESP32--S3--1.28--BOX-orange.svg)](https://it.aliexpress.com/item/1005008821384965.html)
 
-**MiniDisplay** is a modern, modular, open-source firmware based on **ESPHome** and **LVGL 8** designed for the **SP-ESP32-S3-1.28-BOX** circular smart display. 
+**SmartDisplay** is a modern, modular, open-source firmware based on **ESPHome** and **LVGL 8** designed for the **SP-ESP32-S3-1.28-BOX** circular smart display. 
 
 It repurposes the popular AliExpress [Xiaozhi AI desktop box](https://it.aliexpress.com/item/1005008821384965.html) (originally running cloud-locked firmware from [78/xiaozhi-esp32](https://github.com/78/xiaozhi-esp32)) into a **100% local, private, full-featured Home Assistant notification display, desktop clock, weather widget, and TTS voice announcement speaker**.
 
@@ -75,13 +75,13 @@ Want to get running in under 3 minutes? Check our **[⚡ Lapidary Quickstart Gui
 
 ### Installation via ESPHome Dashboard
 
-1. In your Home Assistant ESPHome Dashboard, click **+ New Device**, name it `minidisplay`, and skip the wizard.
-2. Click **Edit** and paste the content of [`minidisplay_standalone.yaml`](minidisplay_standalone.yaml) (or use the modular [`packages/`](packages/) setup).
+1. In your Home Assistant ESPHome Dashboard, click **+ New Device**, name it `smartdisplay`, and skip the wizard.
+2. Click **Edit** and paste the content of [`smartdisplay_standalone.yaml`](smartdisplay_standalone.yaml) (or use the modular [`packages/`](packages/) setup).
 3. Set your parameters in `substitutions:` at the top:
    ```yaml
    substitutions:
-     device_name: "minidisplay"
-     friendly_name: "MiniDisplay"
+     device_name: "smartdisplay"
+     friendly_name: "SmartDisplay"
      timezone: "Europe/Rome"
      weather_entity: "weather.forecast_casa"
      sleep_timeout: "300s"
@@ -101,7 +101,7 @@ Want to get running in under 3 minutes? Check our **[⚡ Lapidary Quickstart Gui
 Call the `esphome.<device_name>_send_notification` action from any automation or script:
 
 ```yaml
-action: esphome.minidisplay_send_notification
+action: esphome.smartdisplay_send_notification
 data:
   message: "Front door was unlocked!"
   icon: "lock_open"
@@ -136,7 +136,7 @@ action: tts.speak
 target:
   entity_id: tts.google_en_com # or tts.piper / cloud TTS
 data:
-  media_player_entity_id: media_player.minidisplay_speaker
+  media_player_entity_id: media_player.smartdisplay_speaker
   message: "Laundry cycle is complete."
 ```
 
@@ -146,7 +146,7 @@ data:
 The standby clock screen features a live outdoor weather widget displaying your local condition icon and temperature.
 
 #### Configuring Your Weather Entity
-In `minidisplay.yaml` (or `minidisplay_standalone.yaml`), simply set `weather_entity` in `substitutions:` to match your Home Assistant weather entity ID:
+In `smartdisplay.yaml` (or `smartdisplay_standalone.yaml`), simply set `weather_entity` in `substitutions:` to match your Home Assistant weather entity ID:
 
 ```yaml
 substitutions:
@@ -175,14 +175,14 @@ The firmware automatically maps Home Assistant weather states to matching Google
 ---
 
 ### 4. Screen Brightness & Dimming Control
-The display backlight is controlled by a 1kHz PWM signal on `GPIO42`, exposed in Home Assistant as a dimmable light entity: **`light.minidisplay_backlight`**.
+The display backlight is controlled by a 1kHz PWM signal on `GPIO42`, exposed in Home Assistant as a dimmable light entity: **`light.smartdisplay_backlight`**.
 
-* **In Home Assistant UI:** Opening the card for `light.minidisplay_backlight` gives you a **0% to 100% brightness slider**.
+* **In Home Assistant UI:** Opening the card for `light.smartdisplay_backlight` gives you a **0% to 100% brightness slider**.
 * **Night Mode Automations:** You can automatically dim the display at bedtime (e.g. 20% brightness) and brighten it in the morning (100% brightness) using standard Home Assistant automations:
   ```yaml
   action: light.turn_on
   target:
-    entity_id: light.minidisplay_backlight
+    entity_id: light.smartdisplay_backlight
   data:
     brightness_pct: 20
     transition: 2
@@ -192,10 +192,10 @@ The display backlight is controlled by a 1kHz PWM signal on `GPIO42`, exposed in
 ---
 
 ### 5. Bluetooth Proxy: Whole-Home BLE Extension
-The firmware integrates ESPHome's **passive Bluetooth Proxy** (`bluetooth_proxy: active: false`), allowing the MiniDisplay to double as a long-range Bluetooth antenna for Home Assistant.
+The firmware integrates ESPHome's **passive Bluetooth Proxy** (`bluetooth_proxy: active: false`), allowing the SmartDisplay to double as a long-range Bluetooth antenna for Home Assistant.
 
 #### Supported Devices & Examples
-By placing the MiniDisplay in your living room, bedroom, or office, Home Assistant can automatically discover and communicate with nearby Bluetooth smart devices without requiring expensive dedicated hubs:
+By placing the SmartDisplay in your living room, bedroom, or office, Home Assistant can automatically discover and communicate with nearby Bluetooth smart devices without requiring expensive dedicated hubs:
 * **💡 Smart Lighting & Bulbs:** Philips Hue BLE lamps, Yeelight BLE bulbs, and Tuya Bluetooth lights.
 * **🌡️ Climate & Room Sensors:** Xiaomi Mijia E-Ink thermometers (`LYWSD03MMC`), Qingping Air Monitors, ThermoPro BLE sensors, and BTHome beacons.
 * **🚪 Security & Motion:** Shelly BLU door/window contacts, Shelly BLU motion detectors, and SwitchBot curtain / bot motors.
@@ -205,11 +205,11 @@ By placing the MiniDisplay in your living room, bedroom, or office, Home Assista
 > The author specifically built this setup to monitor house plants in the room!
 > 
 > * **The Problem:** **Xiaomi Mi Flora (Flower Care)** soil moisture and fertility probes broadcast telemetry using Bluetooth Low Energy (BLE), but their small antennas often fail to reach the main Home Assistant server across multiple walls.
-> * **The Solution:** Sitting on a desk or plant stand, the MiniDisplay passively captures the BLE broadcast packets (soil moisture, fertilizer conductivity, sunlight lux, and temperature) and seamlessly forwards them to Home Assistant over Wi-Fi.
+> * **The Solution:** Sitting on a desk or plant stand, the SmartDisplay passively captures the BLE broadcast packets (soil moisture, fertilizer conductivity, sunlight lux, and temperature) and seamlessly forwards them to Home Assistant over Wi-Fi.
 > * **Why Passive Mode?** Active Bluetooth pairing consumes heavy RAM and can cause audio stuttering. Passive mode (`active: false`) captures 100% of the plant telemetry without establishing connections, keeping TTS audio crystal-clear while ensuring your plants never dry out!
-> * **Full Circle Automation:** When soil moisture drops below 20%, Home Assistant automatically triggers a notification card directly on the MiniDisplay:
+> * **Full Circle Automation:** When soil moisture drops below 20%, Home Assistant automatically triggers a notification card directly on the SmartDisplay:
 >   ```yaml
->   action: esphome.minidisplay_send_notification
+>   action: esphome.smartdisplay_send_notification
 >   data:
 >     message: "Ficus lyrata needs water! Soil moisture is at 15%."
 >     icon: "home"
@@ -222,22 +222,22 @@ By placing the MiniDisplay in your living room, bedroom, or office, Home Assista
 ### 6. Visual Automation Blueprint (One-Click Import)
 Prefer creating automations with a friendly UI rather than writing YAML? We provide a pre-built blueprint!
 
-[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fpasmimmo%2FSmartDisplay%2Fblob%2Fmain%2Fblueprint%2Fminidisplay_notification.yaml)
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fpasmimmo%2FSmartDisplay%2Fblob%2Fmain%2Fblueprint%2Fsmartdisplay_notification.yaml)
 
 #### Option A: Direct Import via UI (Recommended)
 1. In Home Assistant, navigate to **Settings** > **Automations & Scenes** > **Blueprints** tab.
 2. Click **Import Blueprint** (bottom-right button).
 3. Paste the GitHub Blueprint URL:
    ```
-   https://github.com/pasmimmo/SmartDisplay/blob/main/blueprint/minidisplay_notification.yaml
+   https://github.com/pasmimmo/SmartDisplay/blob/main/blueprint/smartdisplay_notification.yaml
    ```
 4. Click **Preview Blueprint** and confirm **Import**.
 5. Click **Create Automation** to pick your trigger, icon, color, and message using dropdown selectors!
 
 #### Option B: Manual File Copy
-Copy [`blueprint/minidisplay_notification.yaml`](blueprint/minidisplay_notification.yaml) directly into your Home Assistant directory:
+Copy [`blueprint/smartdisplay_notification.yaml`](blueprint/smartdisplay_notification.yaml) directly into your Home Assistant directory:
 ```
-/config/blueprints/automation/minidisplay/minidisplay_notification.yaml
+/config/blueprints/automation/smartdisplay/smartdisplay_notification.yaml
 ```
 Then go to **Developer Tools** > **YAML** and click **Automations** to reload.
 
@@ -274,8 +274,8 @@ flowchart TD
 
 ```
 .
-├── minidisplay.yaml            # Modular entrypoint (with substitutions)
-├── minidisplay_standalone.yaml # Standalone all-in-one file (single-file install)
+├── smartdisplay.yaml            # Modular entrypoint (with substitutions)
+├── smartdisplay_standalone.yaml # Standalone all-in-one file (single-file install)
 ├── secrets.yaml.example        # Credentials template
 ├── packages/                   # Clean modular packages
 │   ├── core.yaml               # ESP32-S3, PSRAM, Wi-Fi, OTA, SNTP time
@@ -290,7 +290,7 @@ flowchart TD
 │   ├── automations.yaml        # Doorbell, laundry, temperature, weather automations
 │   └── script_send_notification.yaml # Reusable notification script with UI fields
 ├── blueprint/                  # Home Assistant visual blueprint
-│   └── minidisplay_notification.yaml
+│   └── smartdisplay_notification.yaml
 ├── docs/
 │   ├── QUICKSTART.md           # 3-step rapid setup guide
 │   └── HARDWARE.md             # Reverse-engineered pinout, schematics & backup guide

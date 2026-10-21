@@ -10,7 +10,7 @@ Turn your AliExpress **ESP32-S3 1.28" Round Display Box** into a **Home Assistan
 flowchart LR
     E["1️⃣ <b>Event Occurs</b><br>Doorbell, laundry, leak"]
     H["2️⃣ <b>Home Assistant</b><br>Sends notification"]
-    D["3️⃣ <b>MiniDisplay Wakes</b><br>Shows card & speaks TTS"]
+    D["3️⃣ <b>SmartDisplay Wakes</b><br>Shows card & speaks TTS"]
     T["4️⃣ <b>Touch to Browse</b><br>Swipe history or dismiss"]
 
     E --> H --> D --> T
@@ -29,14 +29,14 @@ flowchart LR
 #### Option A: Copy & Paste in ESPHome Dashboard (Easiest)
 1. Open your **ESPHome Dashboard** in Home Assistant.
 2. Click **+ New Device** in the bottom-right corner.
-3. Choose a name (e.g., `minidisplay`) and skip the wizard.
+3. Choose a name (e.g., `smartdisplay`) and skip the wizard.
 4. Click **Edit** on the newly created device card.
-5. Replace everything with the full content of [`minidisplay_standalone.yaml`](../minidisplay_standalone.yaml).
+5. Replace everything with the full content of [`smartdisplay_standalone.yaml`](../smartdisplay_standalone.yaml).
 6. Customize the top `substitutions:` with your local settings:
    ```yaml
    substitutions:
-     device_name: "minidisplay"
-     friendly_name: "MiniDisplay"
+     device_name: "smartdisplay"
+     friendly_name: "SmartDisplay"
      timezone: "Europe/Rome"
      weather_entity: "weather.forecast_casa" # Change to your HA weather entity (e.g. weather.home)
      sleep_timeout: "300s"                   # Auto screen-off when on battery
@@ -53,7 +53,7 @@ flowchart LR
 9. Click **Install** -> **Plug into this computer** to flash directly from your browser!
 
 #### Option B: Modular Packages (Recommended for Git / Power Users)
-1. Copy the [`packages/`](../packages/) folder and [`minidisplay.yaml`](../minidisplay.yaml) into your Home Assistant `/config/esphome/` directory.
+1. Copy the [`packages/`](../packages/) folder and [`smartdisplay.yaml`](../smartdisplay.yaml) into your Home Assistant `/config/esphome/` directory.
 2. Open ESPHome Dashboard, click **Install**, and flash.
 
 ---
@@ -65,7 +65,7 @@ Once booted and connected to your Wi-Fi, Home Assistant will automatically disco
 Go to **Developer Tools** -> **Actions** (or Services) in Home Assistant and run:
 
 ```yaml
-action: esphome.minidisplay_send_notification
+action: esphome.smartdisplay_send_notification
 data:
   message: "Washing machine cycle finished!"
   icon: "home"
@@ -76,7 +76,7 @@ data:
 The screen will wake up, smoothly fade on, and display your notification card!
 
 > [!TIP]
-> **Automate Visually with Blueprints:** Instead of writing YAML automations by hand, you can import our ready-made [Notification Blueprint](../blueprint/minidisplay_notification.yaml) directly via **Settings > Automations & Scenes > Blueprints > Import Blueprint**!
+> **Automate Visually with Blueprints:** Instead of writing YAML automations by hand, you can import our ready-made [Notification Blueprint](../blueprint/smartdisplay_notification.yaml) directly via **Settings > Automations & Scenes > Blueprints > Import Blueprint**!
 
 ---
 
