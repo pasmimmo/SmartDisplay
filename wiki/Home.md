@@ -6,6 +6,21 @@ It repurposes the popular AliExpress [Xiaozhi AI desktop box](https://it.aliexpr
 
 ---
 
+## 📸 Real Hardware Showcase
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pasmimmo/SmartDisplay/main/.github/assets/smartdisplay_standby_clock.jpg" width="22%" alt="Standby Clock" />
+  <img src="https://raw.githubusercontent.com/pasmimmo/SmartDisplay/main/.github/assets/smartdisplay_notification_card.jpg" width="22%" alt="Notification Card" />
+  <img src="https://raw.githubusercontent.com/pasmimmo/SmartDisplay/main/.github/assets/smartdisplay_clear_dialog.jpg" width="22%" alt="Modal Confirmation" />
+  <img src="https://raw.githubusercontent.com/pasmimmo/SmartDisplay/main/.github/assets/smartdisplay_system_info.jpg" width="22%" alt="System Diagnostics" />
+</p>
+
+| 🕒 Standby Clock & Weather | 📬 Notification Card | 🗑️ Modal Confirmation | ⚙️ System Diagnostics |
+| :---: | :---: | :---: | :---: |
+| Event-driven clock with live rain/temp and unread alert badge | Preemptive LIFO alert with Material Symbol icon | Destructive action confirmation with color-coded safety buttons | IP address, Wi-Fi RSSI (dBm), battery gauge & uptime |
+
+---
+
 ## 🧭 Wiki Navigation
 
 * **[⚡ Quickstart Guide](Quickstart)** — How to configure and flash your SmartDisplay in under 3 minutes.
