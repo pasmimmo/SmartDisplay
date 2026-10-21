@@ -19,7 +19,7 @@ display:
   - platform: mipi_spi
     spi_id: spi_bus
     model: GC9A01A
-    data_rate: 40MHz
+    data_rate: 80MHz
     cs_pin: GPIO5
     dc_pin: GPIO47
     reset_pin: GPIO38

@@ -18,6 +18,7 @@ sensor:
     device_class: battery
     state_class: measurement
     unit_of_measurement: "%"
+    accuracy_decimals: 0
     attenuation: 12db
     update_interval: 60s
     filters:
