@@ -11,10 +11,54 @@ This document provides a technical overview of the **SP-ESP32-S3-1.28-BOX** hard
 * **Microcontroller:** Espressif ESP32-S3 (Dual-core Xtensa LX7 @ 240MHz)
 * **Flash & PSRAM:** 16MB Flash / 8MB Octal SPI PSRAM (@ 80MHz)
 * **Display:** 1.28-inch IPS circular TFT LCD (240x240 resolution)
-* **Display Driver:** GC9A01A (SPI bus @ 40MHz)
+* **Display Driver:** GC9A01A (SPI bus @ 80MHz)
 * **Touch Panel:** CST816D capacitive touch controller (I2C)
 * **Audio Codec / DAC:** Everest ES8311 (I2C configuration + I2S digital audio)
 * **Power & Battery:** Integrated 1S LiPo battery, USB-C charging, ADC battery voltage divider, and hardware charging detection
+
+---
+
+## 🗺️ Hardware Architecture Block Diagram
+
+```mermaid
+flowchart LR
+    subgraph ESP32S3["ESP32-S3 SoC (16MB Flash / 8MB Octal PSRAM)"]
+        CPU["Dual-Core Xtensa LX7 @ 240MHz"]
+        SPI["SPI Master (80MHz)"]
+        I2C0["I2C Bus 0 (Audio)"]
+        I2C1["I2C Bus 1 (Touch)"]
+        I2S["I2S Digital Audio"]
+        ADC["ADC1 Ch0"]
+        LEDC["LEDC PWM (1kHz)"]
+        GPIO_CTRL["GPIO Logic & Sensing"]
+    end
+
+    subgraph Peripherals["Display & Touch Panel"]
+        LCD["GC9A01A 1.28' Round LCD<br>GPIO2 (MOSI) / GPIO4 (CLK)<br>GPIO5 (CS) / GPIO47 (DC) / GPIO38 (RST)"]
+        Touch["CST816D Touch Controller<br>GPIO7 (SCL) / GPIO11 (SDA)<br>GPIO6 (RST) / GPIO12 (INT)"]
+        Backlight["Backlight LED Driver<br>GPIO42 (Inverted PWM)"]
+    end
+
+    subgraph Sound["Audio Subsystem"]
+        DAC["Everest ES8311 Codec<br>GPIO14/15 (I2C 0x18)<br>GPIO9/16/45 (I2S Clocks)"]
+        Amp["Class-D Speaker Amp<br>GPIO46 (Power Shutdown)<br>GPIO8 (I2S Audio In)"]
+    end
+
+    subgraph PowerSystem["Power & Battery Management"]
+        Batt["1S LiPo Battery (3.7V - 4.2V)<br>GPIO1 (2:1 Divider ADC)"]
+        USBC["USB-C 5V Input & Charger<br>GPIO41 (VBUS Presence)"]
+    end
+
+    SPI --> LCD
+    LEDC --> Backlight
+    I2C1 <--> Touch
+    I2C0 <--> DAC
+    I2S --> DAC
+    I2S --> Amp
+    GPIO_CTRL -->|"GPIO46 Amp Enable"| Amp
+    Batt --> ADC
+    USBC -->|"GPIO41 High"| GPIO_CTRL
+```
 
 ---
 
@@ -27,7 +71,7 @@ This document provides a technical overview of the **SP-ESP32-S3-1.28-BOX** hard
 | :--- | :--- | :--- | :--- |
 | **GPIO1** | ADC1 Channel 0 | Battery Monitor | Connected to 2:1 resistor divider. Voltage range: 3.3V (0%) - 4.2V (100%). |
 | **GPIO2** | SPI MOSI | Display (GC9A01A) | Data transmission to round LCD. |
-| **GPIO4** | SPI CLK | Display (GC9A01A) | Clock running at 40MHz. |
+| **GPIO4** | SPI CLK | Display (GC9A01A) | Clock boosted to 80MHz (optimized SPI throughput). |
 | **GPIO5** | SPI CS | Display (GC9A01A) | Chip Select (Active LOW). |
 | **GPIO6** | Touch Reset | Touchscreen (CST816D) | Hardware reset line. |
 | **GPIO7** | I2C SCL (Touch) | Touchscreen (CST816D) | Dedicated Touch I2C bus clock. |

@@ -11,6 +11,95 @@ It repurposes the popular AliExpress [Xiaozhi AI desktop box](https://it.aliexpr
 
 ---
 
+## 🗺️ System Architecture & Workflow
+
+Here is how the entire ecosystem connects at a glance — from Home Assistant automations down to the ESP32-S3 hardware and passive Bluetooth sensors:
+
+```mermaid
+flowchart TD
+    subgraph HA["🏠 Home Assistant Ecosystem"]
+        HA_Auto["Automations & Scripts<br>(Doorbell, Appliances, Leaks)"]
+        HA_Weather["Weather Entity<br>(weather.home)"]
+        HA_TTS["TTS Engine / Audio<br>(Piper / Cloud Voice)"]
+        HA_BLE["Bluetooth Integration<br>(Xiaomi Mi Flora / BTHome)"]
+    end
+
+    subgraph ESP["🔮 MiniDisplay (ESP32-S3 Firmware)"]
+        direction TB
+        API["ESPHome Native API & SNTP Engine"]
+        Queue["LIFO Notification Engine<br>(10-Card Memory Queue)"]
+        LVGL["LVGL 8 Graphics Engine<br>(Clock, Weather, Notifs, Debug)"]
+        Audio["Audio Pipeline & DAC<br>(GPIO46 Dynamic Amp Gating)"]
+        BLE["Passive BLE Proxy<br>(Zero audio/Wi-Fi stuttering)"]
+        Power["Power & Battery Manager<br>(ADC Battery, USB-C detect)"]
+    end
+
+    subgraph HW["📱 Hardware (SP-ESP32-S3-1.28-BOX)"]
+        LCD["1.28' Round IPS LCD<br>(GC9A01A @ 80MHz SPI)"]
+        Touch["Capacitive Touchscreen<br>(CST816D I2C)"]
+        Speaker["Internal Speaker & Amp<br>(Everest ES8311 DAC)"]
+        Battery["1S LiPo + USB-C Charger<br>(GPIO1 ADC / GPIO41 VBUS)"]
+    end
+
+    subgraph Sensors["🌿 Local BLE Peripherals"]
+        Flora["Xiaomi Mi Flora Sensors<br>(Soil moisture, sunlight, temp)"]
+        Beacons["BTHome Thermometers & Beacons"]
+    end
+
+    %% Flow connections
+    HA_Auto -->|"esphome.minidisplay_send_notification"| API
+    HA_Weather -->|"Live conditions & temperature"| API
+    HA_TTS -->|"Voice Stream (I2S)"| Audio
+    Sensors -->|"Passive BLE Advertisements"| BLE
+    BLE -->|"Forwarded sensor data"| HA_BLE
+
+    API --> Queue
+    API --> LVGL
+    Queue --> LVGL
+
+    LVGL -->|"Flicker-free 1kHz PWM + SPI"| LCD
+    Touch -->|"Swipes, taps & long-press"| LVGL
+    Audio -->|"Audio output + GPIO46 auto-enable"| Speaker
+    Battery -->|"Battery level & charging status"| Power
+    Power -->|"Smart auto-sleep (battery only)"| LVGL
+```
+
+### 🔄 Event & Lifecycle Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 👤 User
+    participant HA as 🏠 Home Assistant
+    participant ESP as 🔮 MiniDisplay (ESP32-S3)
+    participant LCD as 🎨 1.28" Round Screen (LVGL)
+    participant Audio as 🔊 Speaker (ES8311)
+
+    Note over HA,ESP: 1. Idle Standby (Desk Mode)
+    HA->>ESP: Sync SNTP Time & Live Weather
+    ESP->>LCD: Display Clock + Outdoor Weather & Temp
+
+    rect rgb(30, 42, 56)
+    Note over HA,ESP: 2. Notification Trigger (e.g., Washing Machine / Doorbell)
+    HA->>ESP: Call esphome.minidisplay_send_notification
+    par Visual Alert
+        ESP->>LCD: Wake display / Fade on backlight (LEDC PWM)
+        ESP->>LCD: Show icon, colored text & counter (e.g. 1/3)
+    and Voice Announcement (Optional)
+        HA->>Audio: Stream TTS voice chime / speech (GPIO46 Amp On)
+        Audio-->>Audio: Auto-cutoff amp 1000ms after speech (GPIO46 Amp Off)
+    end
+    end
+
+    Note over User,LCD: 3. Touch Interaction
+    User->>LCD: Swipe Left / Right: Browse 10-card history
+    User->>LCD: Swipe Down: Open confirmation dialog to clear all
+    User->>LCD: Long Press (2s): Open circular System Diagnostics page
+    User->>LCD: Double Tap: Toggle screen backlight sleep/wake
+```
+
+---
+
 ## ✨ Features
 
 * **🎨 Smooth Circular UI (LVGL 8)**: Tailored specifically for the 240x240 GC9A01A round IPS display.
@@ -200,29 +289,40 @@ By placing the MiniDisplay in your living room, bedroom, or office, Home Assista
 
 ## 👆 Touch Gestures
 
-```
-                    ┌─────────────────────────┐
-                    │    CLOCK & WEATHER      │
-                    │         (Home)          │
-                    └────────────┬────────────┘
-                                 │
-                     Swipe Down  │  Swipe Up
-                                 ▼
-                    ┌─────────────────────────┐
-                    │   NOTIFICATIONS QUEUE   │◄──── Swipe Left / Right
-                    │         (LIFO)          │      (Browse History)
-                    └────────────┬────────────┘
-                                 │
-                     Swipe Down  │  Button "NO" (Cancel)
-                                 ▼
-                    ┌─────────────────────────┐
-                    │  CLEAR ALL NOTIFICATIONS│
-                    │   (Confirmation Modal)  │
-                    └─────────────────────────┘
+```mermaid
+stateDiagram-v2
+    direction TB
+    [*] --> Standby_Clock: Device Boot
+    
+    Standby_Clock --> Notifications_Queue: Swipe Down / New Notification
+    Standby_Clock --> Diagnostics_Page: Long Press (2s)
+    
+    Diagnostics_Page --> Standby_Clock: Swipe / Tap to Exit
+
+    state Notifications_Queue {
+        Card_1: Card 1 (Most Recent)
+        Card_2: Card 2 (Previous)
+        Card_N: Card N (Oldest, up to 10)
+        Card_1 --> Card_2: Swipe Left
+        Card_2 --> Card_1: Swipe Right
+        Card_2 --> Card_N: Swipe Left
+    }
+
+    Notifications_Queue --> Standby_Clock: Swipe Up
+    Notifications_Queue --> Clear_Modal: Swipe Down
+    
+    Clear_Modal --> Notifications_Queue: Tap "NO" (Cancel)
+    Clear_Modal --> Standby_Clock: Tap "SI" (Clear All)
 ```
 
-* **Double Tap (Anywhere)**: Toggle screen backlight On / Off.
-* **Long Press (On Clock)**: Open system diagnostics page (IP, Wi-Fi RSSI, battery voltage, uptime).
+| Gesture | Screen | Action |
+| :--- | :--- | :--- |
+| **Swipe Down** | Standby Clock | Open latest notification card |
+| **Swipe Up** | Notifications | Return to Standby Clock |
+| **Swipe Left / Right** | Notifications | Browse 10-card notification history |
+| **Swipe Down** | Notifications | Open confirmation modal to clear all notifications |
+| **Long Press (2s)** | Standby Clock | Open circular System Diagnostics screen |
+| **Double Tap** | Anywhere | Toggle display backlight sleep / wake |
 
 ---
 

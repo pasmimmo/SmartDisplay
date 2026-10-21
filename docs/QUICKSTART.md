@@ -4,6 +4,40 @@ Turn your AliExpress **ESP32-S3 1.28" Round Display Box** into a **Home Assistan
 
 ---
 
+## 🔄 How It Works at a Glance
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 👤 You
+    participant HA as 🏠 Home Assistant
+    participant ESP as 🔮 MiniDisplay (ESP32-S3)
+    participant LCD as 🎨 1.28" Round LCD
+    participant Audio as 🔊 ES8311 Speaker
+
+    Note over HA,ESP: Idle Standby (Always-on when plugged into USB-C)
+    HA->>ESP: Sync SNTP Time & Live Weather
+    ESP->>LCD: Display Standby Clock + Outdoor Weather & Temp
+
+    rect rgb(30, 42, 56)
+    Note over HA,ESP: Automation Trigger (Doorbell / Appliance / Leaks)
+    HA->>ESP: Call esphome.minidisplay_send_notification
+    par Visual Alert
+        ESP->>LCD: Wake / Fade on backlight (LEDC PWM)
+        ESP->>LCD: Display notification icon, colored text & counter
+    and Audio Alert (Optional)
+        HA->>Audio: Play TTS voice announcement or chime
+    end
+    end
+
+    Note over User,LCD: Interactive Touch Navigation
+    User->>LCD: Swipe Left / Right (Browse 10-card history)
+    User->>LCD: Swipe Down (Confirm & clear all notifications)
+    User->>LCD: Long Press (View Wi-Fi, IP & Battery diagnostics)
+```
+
+---
+
 ### Step 1: Get the Hardware
 * **Hardware Device:** [ESP32-S3 1.28" Round Display Box on AliExpress](https://it.aliexpress.com/item/1005008821384965.html)
 * **What you get:** ESP32-S3 (8MB PSRAM), 1.28" 240x240 circular IPS screen, CST816D capacitive touch, ES8311 audio DAC, speaker, LiPo battery, and a clean desktop enclosure with USB-C.
