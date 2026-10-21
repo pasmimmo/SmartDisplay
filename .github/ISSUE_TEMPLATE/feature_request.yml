@@ -1,0 +1,43 @@
+name: ✨ Feature Request
+description: Suggest an idea, UI widget, sensor support, or enhancement for SmartDisplay.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea for a new screen, sensor component, or automation? We'd love to hear it!
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem or limitation?
+      description: A clear and concise description of the limitation you are encountering.
+      placeholder: "I'm always frustrated when..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the Solution You'd Like
+      description: A clear description of what you want to happen, including proposed UI layouts or entity interactions.
+      placeholder: "I would like a new thermostat page that shows current vs target temp..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Describe Alternatives You've Considered
+      description: Any alternative solutions or workarounds you've evaluated.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context or Mockups
+      description: Add any screenshots, references, or wireframe mockups to illustrate the proposal.
+    validations:
+      required: false

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 SmartDisplay Documentation & Wiki
+    url: https://github.com/pasmimmo/SmartDisplay/wiki
+    about: Read the official hardware pinouts, blueprints, and quickstart guides before opening an issue.
+  - name: 💬 Home Assistant Community Discussion
+    url: https://community.home-assistant.io
+    about: Ask general questions, share configurations, and get community feedback.

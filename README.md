@@ -3,6 +3,8 @@
 [![ESPHome CI](https://github.com/pasmimmo/SmartDisplay/actions/workflows/ci.yml/badge.svg)](https://github.com/pasmimmo/SmartDisplay/actions/workflows/ci.yml)
 [![ESPHome Version](https://img.shields.io/badge/ESPHome-2024.10%2B-blue.svg)](https://esphome.io)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Compatible-41BDF5.svg)](https://home-assistant.io)
+[![Architecture Decisions](https://img.shields.io/badge/Architecture-ADRs%20Documented-teal.svg)](docs/ARCHITECTURE_DECISIONS.md)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Hardware](https://img.shields.io/badge/Hardware-SP--ESP32--S3--1.28--BOX-orange.svg)](https://it.aliexpress.com/item/1005008821384965.html)
 
@@ -35,7 +37,7 @@ flowchart LR
 
 ## ✨ Features
 
-* **🎨 Smooth Circular UI (LVGL 8)**: Tailored specifically for the 240x240 GC9A01A round IPS display.
+* **🎨 Smooth Circular UI (LVGL 8)**: Tailored specifically for the 240x240 GC9A01A round IPS display running at 80 MHz SPI bus with DMA acceleration.
 * **📬 LIFO Notification Queue**: Stores up to 10 notifications in an interactive card carousel with Material Symbols icons and customizable text colors.
 * **🔊 Voice Announcements (TTS & Media Player)**: Built-in ES8311 DAC + I2S speaker integrated with Home Assistant's `announcement_pipeline`.
 * **⛅ Standby Clock + Live Weather**: Event-driven digital clock synchronized over SNTP + live outdoor condition icon and temperature fetched directly from Home Assistant.
@@ -44,7 +46,7 @@ flowchart LR
   * Accurate battery level reporting with an ADC median filter (`GPIO1`).
   * Hardware charging detection (`GPIO41`).
   * Auto-sleep timer (default: 300s) turns off the screen **only** when running on battery; stays awake on desk when plugged in.
-  * **Dynamic Audio Power**: Automatically cuts amplifier power (`GPIO46`) in standby, saving **~20mA** and eliminating background hiss.
+  * **Dynamic Audio Power Gating**: Automatically cuts amplifier power (`GPIO46`) in standby, saving **~20mA** and eliminating background hiss.
 * **🎛️ Dimmable PWM Backlight**: 1kHz flicker-free LEDC control with smooth fade-in/fade-out transitions. Exposes a 1%–100% brightness slider in Home Assistant to easily dim the screen at night.
 * **📡 Passive Bluetooth Proxy (Xiaomi Plant Sensors)**: Acts as a localized BLE proxy for Home Assistant. Ideal for capturing passive data from **Xiaomi Mi Flora / Flower Care plant sensors**, BTHome beacons, or BLE thermometers without connection overhead or audio stuttering.
 * **👆 Natural Touch Gestures**: Browse history, toggle screen, open diagnostics, or clear notifications with intuitive swipes.
@@ -72,7 +74,7 @@ flowchart LR
 
 ## 🚀 Quickstart
 
-Want to get running in under 3 minutes? Check our **[⚡ Lapidary Quickstart Guide](docs/QUICKSTART.md)**!
+Want to get running in under 3 minutes? Check our **[⚡ Lapidary Quickstart Guide](docs/QUICKSTART.md)** or the **[GitHub Wiki](https://github.com/pasmimmo/SmartDisplay/wiki)**!
 
 ### Installation via ESPHome Dashboard
 
@@ -242,6 +244,8 @@ Copy [`blueprint/smartdisplay_notification.yaml`](blueprint/smartdisplay_notific
 ```
 Then go to **Developer Tools** > **YAML** and click **Automations** to reload.
 
+---
+
 ## 👆 Touch Gestures
 
 ```mermaid
@@ -271,48 +275,69 @@ flowchart TD
 
 ---
 
+## 🧠 Architecture Decision Records (ADR)
+
+We believe in documenting the engineering rationale behind hardware and software trade-offs. The full decision log is maintained in **[`docs/ARCHITECTURE_DECISIONS.md`](docs/ARCHITECTURE_DECISIONS.md)**:
+
+* **[ADR-01: Display SPI Bus at 80 MHz](docs/ARCHITECTURE_DECISIONS.md#adr-01-display-spi-bus-frequency-at-80-mhz-vs-40-mhz)**: Pixel throughput analysis ($921.6\text{ kb/frame}$) delivering a $11.5\text{ ms}$ DMA transfer time to secure a 30 FPS rendering budget.
+* **[ADR-02: Passive BLE Proxy vs Active Tracking](docs/ARCHITECTURE_DECISIONS.md#adr-02-passive-ble-proxy-vs-active-tracking-mode)**: 2.4 GHz RF coexistence solving Wi-Fi beacon drops and eliminating I2S audio stutter.
+* **[ADR-03: Dynamic GPIO46 Power Gating](docs/ARCHITECTURE_DECISIONS.md#adr-03-dynamic-gpio46-power-gating-for-ns4168-class-d-amplifier)**: Power-down automation saving $\approx 20\text{ mA}$ quiescent current and silencing Class-D switching hiss.
+* **[ADR-04: LIFO 10-Item Notification Queue](docs/ARCHITECTURE_DECISIONS.md#adr-04-lifo-10-item-notification-queue-for-real-time-glanceability)**: Ring-buffer design prioritizing immediate glanceability for critical home alarms.
+* **[ADR-05: Event-Driven SNTP Synchronization](docs/ARCHITECTURE_DECISIONS.md#adr-05-event-driven-sntp-synchronization-vs-cyclic-polling)**: Eradication of periodic 10s CPU wake-locks for smooth animation loops and thermal stability.
+
+---
+
 ## 📁 Repository Structure
 
 ```
 .
-├── smartdisplay.yaml            # Modular entrypoint (with substitutions)
-├── smartdisplay_standalone.yaml # Standalone all-in-one file (single-file install)
-├── secrets.yaml.example        # Credentials template
-├── packages/                   # Clean modular packages
-│   ├── core.yaml               # ESP32-S3, PSRAM, Wi-Fi, OTA, SNTP time
-│   ├── display.yaml            # GC9A01A, CST816D, Backlight PWM, sleep timer
-│   ├── audio.yaml              # ES8311, I2S, Dynamic amp control, Media Player
-│   ├── sensors.yaml            # Battery ADC, charging sensor, Wi-Fi diagnostic
-│   ├── fonts.yaml              # Roboto & Material Symbols typography
-│   ├── notifications.yaml      # Notification queue & API action
-│   ├── weather.yaml            # Home Assistant weather synchronization
-│   └── ui.yaml                 # LVGL pages, widgets, and gesture handlers
-├── examples/home-assistant/    # Ready-to-use Home Assistant automations & scripts
-│   ├── automations.yaml        # Doorbell, laundry, temperature, weather automations
-│   └── script_send_notification.yaml # Reusable notification script with UI fields
-├── blueprint/                  # Home Assistant visual blueprint
+├── .github/
+│   ├── workflows/ci.yml         # GitHub Actions: yamllint + ESPHome config verification
+│   ├── ISSUE_TEMPLATE/          # Structured YAML forms for Bug Reports & Feature Requests
+│   ├── pull_request_template.md # PR submission checklist & verification protocol
+│   └── assets/                  # Media specifications, diagrams & visual assets
+├── packages/                    # Modular ESPHome packages
+│   ├── core.yaml                # ESP32-S3, PSRAM, Wi-Fi, OTA, SNTP time
+│   ├── display.yaml             # GC9A01A (80MHz SPI), CST816D touch, Backlight PWM
+│   ├── audio.yaml               # ES8311, I2S DAC, Dynamic amp gating, Media Player
+│   ├── sensors.yaml             # Battery ADC median filter, charging detection, Wi-Fi RSSI
+│   ├── fonts.yaml               # Roboto typography & Material Symbols glyphs
+│   ├── notifications.yaml       # LIFO 10-card ring buffer & API action call
+│   ├── weather.yaml             # Home Assistant weather synchronization & offline fallbacks
+│   └── ui.yaml                  # LVGL pages, custom widgets, and touch gesture engine
+├── examples/home-assistant/     # Production-ready automations & notification scripts
+│   ├── automations.yaml         # Doorbell, laundry, temperature, weather automations
+│   └── script_send_notification.yaml
+├── blueprint/                   # Home Assistant visual blueprint
 │   └── smartdisplay_notification.yaml
-├── docs/
-│   ├── QUICKSTART.md           # 3-step rapid setup guide
-│   └── HARDWARE.md             # Reverse-engineered pinout, schematics & backup guide
-└── LICENSE                     # MIT License
+├── docs/                        # Formal documentation & engineering records
+│   ├── QUICKSTART.md            # 3-step rapid setup guide
+│   ├── HARDWARE.md              # 19-GPIO pinout, schematics, flash backup guide
+│   └── ARCHITECTURE_DECISIONS.md # Detailed ADR records (ADR-01 to ADR-05)
+├── smartdisplay.yaml             # Modular entrypoint (with substitutions)
+├── smartdisplay_standalone.yaml  # Standalone all-in-one file (single-file install)
+├── secrets.yaml.example         # Credentials template
+├── requirements-ci.txt          # Python dependencies for CI pipeline
+├── .yamllint.yml                # YAML linting configuration
+├── CONTRIBUTING.md              # Contributor guide, branching model, Conventional Commits
+├── CODE_OF_CONDUCT.md           # Contributor Covenant v2.1
+├── RELEASE_NOTES.md             # v1.0.0 release changelog
+└── LICENSE                      # MIT License
 ```
 
 ---
 
-## 💡 Have Different Needs? (Fork & Contribute!)
+## 🤝 Contributing
 
-> *Got an idea for a custom screen, want different touch gestures, or have unique needs for your smart home?* 🚀
-> 
-> Feel completely free to **fork or clone this repository**, tinker with the code, and make it your own! Every contribution, pull request, bug report, or idea is warmly welcomed — let's make this little circular display even better together! ❤️
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+Please review our **[Contributing Guidelines](CONTRIBUTING.md)** and **[Code of Conduct](CODE_OF_CONDUCT.md)** before opening a Pull Request.
 
 ---
 
-## 🤝 Credits & Contributors
+## 👥 Credits & Maintainers
 
-* **[pasmimmo](https://github.com/pasmimmo)**: Creator, reverse engineering, and project maintainer.
+* **[pasmimmo](https://github.com/pasmimmo)**: Hardware reverse-engineering, architecture, and maintainer.
 * **[Antigravity](https://github.com/google-deepmind)** (Google DeepMind): AI pair programming partner, modular architecture, optimizations & documentation.
 * **[78/xiaozhi-esp32](https://github.com/78/xiaozhi-esp32)**: Hardware insights from the original open-source AI desktop bot firmware.
 * Built with the incredible power of [ESPHome](https://esphome.io) and [LVGL](https://lvgl.io).
-
-

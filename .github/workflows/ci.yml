@@ -2,14 +2,14 @@ name: ESPHome CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   workflow_dispatch:
 
 jobs:
   validate:
-    name: Validate ESPHome Configurations
+    name: Lint & Validate ESPHome Configurations
     runs-on: ubuntu-latest
 
     steps:
@@ -23,10 +23,13 @@ jobs:
           cache: "pip"
           cache-dependency-path: "requirements-ci.txt"
 
-      - name: 📦 Install ESPHome
+      - name: 📦 Install CI Dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements-ci.txt
+
+      - name: 🔍 Lint YAML Files (yamllint)
+        run: yamllint -c .yamllint.yml .
 
       - name: 🔐 Prepare Mock Secrets
         run: cp secrets.yaml.example secrets.yaml

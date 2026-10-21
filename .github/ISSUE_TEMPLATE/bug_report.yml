@@ -1,0 +1,79 @@
+name: 🐛 Bug Report
+description: File a reproducible bug report to help us improve SmartDisplay.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue! Before submitting, please check existing issues and the [Troubleshooting Wiki](https://github.com/pasmimmo/SmartDisplay/wiki/Troubleshooting).
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe what happened...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: installation-type
+    attributes:
+      label: Installation Mode
+      description: Which installation setup are you using?
+      options:
+        - "Modular Packages (smartdisplay.yaml + packages/)"
+        - "Single-file Standalone (smartdisplay_standalone.yaml)"
+    validations:
+      required: true
+
+  - type: input
+    id: esphome-version
+    attributes:
+      label: ESPHome Version
+      description: What version of ESPHome are you using? (e.g. 2024.10.3)
+      placeholder: "2024.10.x"
+    validations:
+      required: true
+
+  - type: input
+    id: ha-version
+    attributes:
+      label: Home Assistant Version (if applicable)
+      description: What version of Home Assistant Core are you running?
+      placeholder: "2024.10.x"
+    validations:
+      required: false
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce the behavior?
+      placeholder: |
+        1. Flash device with...
+        2. Send notification action via Home Assistant...
+        3. Double tap the screen...
+        4. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs & Output
+      description: Please paste relevant ESPHome serial or Home Assistant log output. Wrap logs in markdown code fences (```).
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have verified that my `secrets.yaml` does not contain sensitive tokens in the logs pasted above.
+          required: true
+        - label: I searched existing issues and confirmed this is not a duplicate.
+          required: true
