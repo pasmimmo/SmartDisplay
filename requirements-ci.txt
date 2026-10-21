@@ -1,0 +1,2 @@
+# CI/CD Dependencies for ESPHome Validation
+esphome>=2024.10.0
