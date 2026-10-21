@@ -38,10 +38,10 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
 
 ### Fase 2: Test & Fix di Problemi Noti
 - [x] **Fix colori pulsanti dialog cancellazione notifiche**: Invertiti colori (NO = Verde `0x009900` per annullare/mantenere, SI = Rosso `0xCC0000` per cancellazione distruttiva) sia nella versione modulare che monolitica
-- [ ] Test su hardware fisico (flash tramite ESPHome e verifica funzionamento di tutti i moduli)
-- [ ] Verifica calibrazione batteria (GPIO1 ADC 3.3V - 4.2V, stabilità campionamento)
-- [ ] Verifica sensore di ricarica (GPIO41)
-- [ ] Verifica audio/TTS ed eventuale rumore di fondo all'attivazione dell'amplificatore GPIO46
+- [x] Test su hardware fisico (flash tramite ESPHome e verifica funzionamento di tutti i moduli)
+- [x] Verifica calibrazione batteria (GPIO1 ADC 3.3V - 4.2V, stabilità campionamento)
+- [x] Verifica sensore di ricarica (GPIO41)
+- [x] Verifica audio/TTS ed eventuale rumore di fondo all'attivazione dell'amplificatore GPIO46
 
 ---
 
@@ -55,6 +55,9 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
 - [x] **Ottimizzazione B - Dimming & Transizioni**: Frequenza PWM 1kHz per dimming senza sfarfallio, transizioni morbide a dissolvenza (fade out 500ms allo standby, 250ms al risveglio)
 - [x] **Ottimizzazione C - Badge Notifiche non lette**: Campanella d'avviso ambra sopra l'orologio (`y: -65`) che appare automaticamente quando ci sono notifiche nella coda e scompare quando vengono cancellate
 - [x] **Ottimizzazione D - Risparmio Batteria Audio**: Amplificatore GPIO46 gestito dinamicamente (acceso solo durante annunci/riproduzione, spento con delay 1s in standby per eliminare fruscio e risparmiare ~20mA)
+- [x] **Ottimizzazione E - Ritorno automatico alla Home**: Trigger `on_turn_off` su `display_backlight` che riporta sempre a `home_page` quando lo schermo si spegne
+- [x] **Ottimizzazione F - Geometria circolare pagina di debug**: Centratura metrica simmetrica per evitare scritte tagliate su schermo rotondo GC9A01A
+- [x] **Ridenominazione Globale**: Uniformato il dispositivo, tutte le entità e i file in `smartdisplay` / `SmartDisplay`
 
 ---
 
