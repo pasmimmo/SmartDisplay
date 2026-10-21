@@ -1,77 +1,83 @@
 ---
-title: "SP-ESP32-S3-1.28-BOX Circular Smart Display"
-date: 2026-10-21
-author: "pasmimmo"
-project_url: "https://github.com/pasmimmo/SmartDisplay"
+title: SP-ESP32-S3-1.28-BOX Smart Display
+date-published: 2026-10-21
+type: misc
+standard: global
+board: esp32
+project-url: https://github.com/pasmimmo/SmartDisplay
+made-for-esphome: false
 difficulty: 2
-category: "Display"
-tags:
-  - "esp32-s3"
-  - "gc9a01a"
-  - "cst816d"
-  - "es8311"
-  - "lvgl"
-  - "bluetooth_proxy"
-  - "battery"
 ---
 
-# SP-ESP32-S3-1.28-BOX Circular Smart Display
+## Product Description
 
-The **SP-ESP32-S3-1.28-BOX** (popularly sold on AliExpress as the "Xiaozhi AI Desktop Companion") is an all-in-one circular smart display in a spherical desktop enclosure. 
+The **SP-ESP32-S3-1.28-BOX** (popularly sold on AliExpress as the "Xiaozhi AI Desktop Companion") is an all-in-one circular smart display in a compact desktop enclosure.
 
-It features an ESP32-S3 SoC with 16MB Flash and 8MB Octal PSRAM, a 1.28" circular IPS LCD (GC9A01A), CST816D capacitive touch screen, Everest ES8311 I2S audio DAC with an onboard Class-D speaker amplifier, a rechargeable 1S LiPo battery, and USB-C connectivity.
+It features an ESP32-S3 SoC with 16MB Flash and 8MB Octal PSRAM, a 1.28" circular IPS LCD (GC9A01A over 80MHz SPI), CST816D capacitive touch screen, Everest ES8311 I2S audio DAC with an onboard Class-D speaker amplifier (NS4168), a rechargeable 1S LiPo battery with ADC monitoring, and USB-C connectivity.
 
-## Hardware Specifications
+## Product Images
 
-| Peripheral | Chipset / Pins | Details |
+![SmartDisplay Standby Clock](smartdisplay_standby_clock.jpg "SP-ESP32-S3-1.28-BOX Running SmartDisplay")
+
+## GPIO Pinout
+
+| GPIO | Function | Details |
 | :--- | :--- | :--- |
-| **SoC** | Espressif ESP32-S3 | Dual-core XTensa LX7 @ 240MHz, 16MB Flash, 8MB Octal PSRAM |
-| **Display** | GC9A01A | 1.28" Circular IPS LCD ($240 \times 240$), 4-wire SPI @ 80MHz |
-| **Touchscreen** | CST816D | Capacitive I2C (SDA: `GPIO4`, SCL: `GPIO8`, INT: `GPIO11`, RST: `GPIO12`) |
-| **Audio DAC** | Everest ES8311 | I2C config + I2S digital audio (DIN: `GPIO16`, BCLK: `GPIO17`, LRCK: `GPIO18`) |
-| **Amplifier** | NS4168 | Mono Class-D, Power Gating / Enable via `GPIO46` |
-| **Backlight** | LEDC PWM | 1kHz PWM dimming on `GPIO42` |
-| **Battery ADC** | Internal Divider | Voltage divider on `GPIO1` with median filtering |
-| **Charging** | Detection Pin | Active-low charging sensor on `GPIO41` |
+| GPIO0 | BOOT Button | Active LOW |
+| GPIO1 | Battery ADC | Voltage divider for 1S LiPo monitoring |
+| GPIO4 | I2C SDA | Shared by CST816D Touch & ES8311 DAC |
+| GPIO5 | SPI CS | GC9A01A Display Chip Select |
+| GPIO6 | SPI MOSI | GC9A01A Display SPI Data |
+| GPIO7 | SPI CLK | GC9A01A Display SPI Clock (80MHz) |
+| GPIO8 | I2C SCL | Shared by CST816D Touch & ES8311 DAC |
+| GPIO11 | Touch INT | CST816D Capacitive Touch Interrupt |
+| GPIO12 | Touch RESET | CST816D Capacitive Touch Reset |
+| GPIO15 | Display DC | GC9A01A Data / Command Control |
+| GPIO16 | I2S DIN | ES8311 DAC Digital Audio Data |
+| GPIO17 | I2S BCLK | ES8311 Bit Clock |
+| GPIO18 | I2S LRCK | ES8311 Word Select / Left-Right Clock |
+| GPIO38 | Display RESET | GC9A01A Hardware Reset |
+| GPIO41 | Charge Detect | Battery charging state (active LOW) |
+| GPIO42 | Backlight PWM | LEDC 1kHz PWM dimming |
+| GPIO46 | Speaker Enable | NS4168 Class-D amplifier power gating |
 
-## Flashing Instructions
-
-1. Connect the device via USB-C to your computer.
-2. If the ESP32-S3 is not detected in bootloader mode, hold down the onboard `BOOT` button (accessible via pinhole on the bottom or enclosure) while plugging in the USB-C cable.
-3. Flash using ESPHome Web Tools ([web.esphome.io](https://web.esphome.io)) or the ESPHome Dashboard.
-
-## Configuration
-
-You can install the complete community firmware directly from GitHub using ESPHome's `packages` feature:
+## Basic Configuration
 
 ```yaml
 substitutions:
-  device_name: "smartdisplay"
+  name: "smartdisplay"
   friendly_name: "SmartDisplay"
-  timezone: "Europe/Rome"
-  weather_entity: "weather.forecast_casa"
-  sleep_timeout: "300s"
 
-packages:
-  remote_display:
-    url: "https://github.com/pasmimmo/SmartDisplay"
-    ref: "main"
-    files:
-      - packages/core.yaml
-      - packages/display.yaml
-      - packages/audio.yaml
-      - packages/sensors.yaml
-      - packages/fonts.yaml
-      - packages/notifications.yaml
-      - packages/weather.yaml
-      - packages/ui.yaml
+esphome:
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+logger:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+api:
+
+ota:
+  - platform: esphome
+
+# Complete modular packages or standalone config available at:
+# https://github.com/pasmimmo/SmartDisplay
 ```
 
-Alternatively, download the standalone single-file configuration from [`smartdisplay_standalone.yaml`](https://github.com/pasmimmo/SmartDisplay/blob/main/smartdisplay_standalone.yaml).
+## Notes
 
-## Key Features
-
-* **LittlevGL (LVGL 8) UI**: Smooth circular graphics with event-driven clock, dynamic weather conditions, and touch gesture engine.
-* **LIFO Notification Queue**: Interactive 10-item carousel prioritizing immediate glanceability for home alarms.
-* **Passive Bluetooth Proxy**: Forwards telemetry from Xiaomi Mi Flora plant monitors, BTHome sensors, and BLE beacons without radio interference.
-* **Acoustic Power Gating**: Dynamic power switching on `GPIO46` eliminates Class-D quiescent draw (~20mA) and idle speaker hiss.
+- **Full Firmware & UI**: A complete turn-key firmware featuring LVGL 8 circular UI, LIFO 10-notification carousel, live weather, TTS announcements, and passive Bluetooth proxy is available in the [pasmimmo/SmartDisplay](https://github.com/pasmimmo/SmartDisplay) repository.
+- **PSRAM**: Requires 8MB Octal PSRAM configuration for LittlevGL display rendering and I2S audio pipelines.
+- **Audio Power Gating**: GPIO46 must be pulled HIGH during audio playback to enable the NS4168 speaker amplifier; pulling it LOW during standby saves ~20mA and eliminates speaker hiss.

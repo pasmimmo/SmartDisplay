@@ -77,3 +77,4 @@ The project includes both a clean **modular package architecture** (`packages/*.
 * 🧠 **Architecture Decision Records (ADR):** [docs/ARCHITECTURE_DECISIONS.md](https://github.com/pasmimmo/SmartDisplay/blob/main/docs/ARCHITECTURE_DECISIONS.md)
 
 Feedback, feature ideas, and pull requests are warmly welcomed! Let me know what you think! 🚀
+
