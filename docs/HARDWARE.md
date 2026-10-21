@@ -20,6 +20,9 @@ This document provides a technical overview of the **SP-ESP32-S3-1.28-BOX** hard
 
 ## 📌 Complete GPIO Pinout Table
 
+> [!WARNING]
+> **Board Revisions Notice:** AliExpress vendors and clones occasionally update PCB revisions or route pins slightly differently (e.g., audio amplifier enable on GPIO46 vs GPIO48, or touch interrupt). The pinout documented below is tailored for the **SP-ESP32-S3-1.28-BOX**. Always verify your board's silkscreen markings or test with a multimeter if a specific peripheral does not initialize on your unit.
+
 | GPIO Pin | Function | Subsystem | Notes |
 | :--- | :--- | :--- | :--- |
 | **GPIO1** | ADC1 Channel 0 | Battery Monitor | Connected to 2:1 resistor divider. Voltage range: 3.3V (0%) - 4.2V (100%). |

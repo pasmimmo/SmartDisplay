@@ -41,6 +41,9 @@ It repurposes the popular AliExpress [Xiaozhi AI desktop box](https://it.aliexpr
 | **Audio DAC** | Everest ES8311 + onboard speaker amp |
 | **Battery** | Internal rechargeable 1S LiPo + USB-C charging port |
 
+> [!WARNING]
+> **Hardware Revisions & Pinout Notice:** AliExpress vendors occasionally release revised PCB revisions or clones with slightly different GPIO pin assignments (e.g., audio amp enable or touch interrupt). The pinout documented here is verified for the **SP-ESP32-S3-1.28-BOX**. Always inspect your board's silkscreen markings or verify with your seller's schematic if a peripheral doesn't respond!
+
 👉 For full pinout tables, schematics, and factory firmware backup instructions, see **[Hardware Reference](docs/HARDWARE.md)**.
 
 ---
@@ -252,9 +255,21 @@ By placing the MiniDisplay in your living room, bedroom, or office, Home Assista
 
 ---
 
-## 🤝 Credits & Acknowledgements
+## 💡 Hai esigenze diverse? (Fork & Contribute!)
 
-* Reverse engineering hardware insights from [78/xiaozhi-esp32](https://github.com/78/xiaozhi-esp32).
-* Built with [ESPHome](https://esphome.io) and [LVGL](https://lvgl.io).
-* Created with ❤️ by **pasmimmo** for the Home Assistant & ESPHome community.
+> *Hai un'idea per una nuova schermata, vuoi personalizzare le gesture o hai esigenze diverse per la tua domotica?* 🚀
+> 
+> Sentiti liberissimo di **clonare o forcare questo repository**, adattarlo ai tuoi progetti e fare esperimenti! Ogni contributo, suggerimento, pull request o semplice feedback è super ben accetto: facciamo crescere questo piccolo display insieme! ❤️
+> 
+> *(Have different needs or a unique smart home setup? Feel free to clone or fork this repo, experiment, and make it your own! PRs, ideas, and feedback are always welcome!)*
+
+---
+
+## 🤝 Credits & Contributors
+
+* **[pasmimmo](https://github.com/pasmimmo)**: Creator, reverse engineering, and project maintainer.
+* **[Antigravity](https://github.com/google-deepmind)** (Google DeepMind): AI pair programming partner, modular architecture, optimizations & documentation.
+* **[78/xiaozhi-esp32](https://github.com/78/xiaozhi-esp32)**: Hardware insights from the original open-source AI desktop bot firmware.
+* Built with the incredible power of [ESPHome](https://esphome.io) and [LVGL](https://lvgl.io).
+
 
