@@ -1,17 +1,10 @@
 # Visual Showcase Assets
 
-This directory contains visual media, photos, diagrams, and preview assets for **SmartDisplay**.
+This directory contains real hardware media, photos, diagrams, and preview assets for **SmartDisplay**.
 
-## Recommended Media Specifications
+## Hardware Gallery
 
-1. **`banner.png` (Social Preview Card)**
-   * Resolution: $1280 \times 640\text{ px}$ (2:1 aspect ratio, GitHub recommended)
-   * Content: SmartDisplay device mockup, Home Assistant logo, ESPHome logo, key features.
-
-2. **`demo_clock.gif` / `demo_notifications.gif`**
-   * Framerate: 15–30 FPS
-   * Resolution: $\approx 480 \times 480\text{ px}$
-   * Content: Smooth LVGL clock face transition, touch gesture response, and notification popup.
-
-3. **`hardware_hero.jpg`**
-   * Resolution: High-resolution real desktop/nightstand photograph showing the 1.28" circular display active with 3D-printed enclosure.
+* **`smartdisplay_standby_clock.jpg`**: Standby clock face displaying current time, dynamic weather forecast (rain icon + 16.5°C), and unread notification bell badge.
+* **`smartdisplay_notification_card.jpg`**: Full-screen notification card displaying Material Symbol bell glyph and incoming Home Assistant alert ("Serramenti Aperti").
+* **`smartdisplay_clear_dialog.jpg`**: Modal confirmation screen prompting the user to delete/clear queued notifications (`NO` vs `SI`).
+* **`smartdisplay_system_info.jpg`**: Real-time diagnostics screen displaying IP address, Wi-Fi SSID & RSSI dBm, battery percentage, uptime, and ESPHome firmware version.

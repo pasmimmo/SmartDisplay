@@ -35,6 +35,21 @@ flowchart LR
 
 ---
 
+## 📸 Real Hardware Showcase
+
+<p align="center">
+  <img src=".github/assets/smartdisplay_standby_clock.jpg" width="23%" alt="Standby Clock & Weather" />
+  <img src=".github/assets/smartdisplay_notification_card.jpg" width="23%" alt="Notification Card" />
+  <img src=".github/assets/smartdisplay_clear_dialog.jpg" width="23%" alt="Clear Confirmation Modal" />
+  <img src=".github/assets/smartdisplay_system_info.jpg" width="23%" alt="System Info Diagnostics" />
+</p>
+
+| 🕒 Standby Clock & Weather | 📬 Notification Card | 🗑️ Modal Confirmation | ⚙️ System Diagnostics |
+| :---: | :---: | :---: | :---: |
+| Event-driven clock with live rain/temp and unread alert badge | Preemptive LIFO alert with Material Symbol icon | Destructive action confirmation with color-coded safety buttons | IP address, Wi-Fi RSSI (dBm), battery gauge & uptime |
+
+---
+
 ## ✨ Features
 
 * **🎨 Smooth Circular UI (LVGL 8)**: Tailored specifically for the 240x240 GC9A01A round IPS display running at 80 MHz SPI bus with DMA acceleration.
@@ -295,7 +310,7 @@ We believe in documenting the engineering rationale behind hardware and software
 │   ├── workflows/ci.yml         # GitHub Actions: yamllint + ESPHome config verification
 │   ├── ISSUE_TEMPLATE/          # Structured YAML forms for Bug Reports & Feature Requests
 │   ├── pull_request_template.md # PR submission checklist & verification protocol
-│   └── assets/                  # Media specifications, diagrams & visual assets
+│   └── assets/                  # Real hardware photos, diagrams & visual assets
 ├── packages/                    # Modular ESPHome packages
 │   ├── core.yaml                # ESP32-S3, PSRAM, Wi-Fi, OTA, SNTP time
 │   ├── display.yaml             # GC9A01A (80MHz SPI), CST816D touch, Backlight PWM

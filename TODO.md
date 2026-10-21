@@ -104,8 +104,9 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
 
 #### 4. 📸 Visual Showcase & Media Reali
 - [x] Cartella `.github/assets/` con specifiche multimediali e guida asset
+- [x] Foto reali del device in funzione (`smartdisplay_standby_clock.jpg`, `smartdisplay_notification_card.jpg`, `smartdisplay_clear_dialog.jpg`, `smartdisplay_system_info.jpg`)
+- [x] Galleria fotografica integrata nel `README.md`
 - [ ] Registrazione GIF animate del display funzionante per `README.md` (schermata standby, animazione notifica, gesture touch)
-- [ ] Foto reali del device su scrivania/comodino
 - [ ] Immagine banner per anteprima social su GitHub (`.github/assets/banner.png`)
 
 #### 5. 🌐 Condivisione Community
