@@ -27,8 +27,6 @@ esp32:
   variant: esp32s3
   framework:
     type: esp-idf
-    advanced:
-      flash_chip: generic
 
 # 8MB Octal SPI PSRAM running at 80MHz (required for audio buffering and LVGL)
 psram:
