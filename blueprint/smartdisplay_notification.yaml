@@ -71,4 +71,3 @@ action:
       icon: !input icon_selection
       text_color: !input color_selection
       timeout: !input timeout_seconds
-

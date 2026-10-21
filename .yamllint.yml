@@ -3,7 +3,7 @@ extends: default
 
 rules:
   line-length:
-    max: 220
+    max: 240
     level: warning
   truthy:
     allowed-values: ['true', 'false', 'on', 'off', 'yes', 'no']
@@ -13,6 +13,8 @@ rules:
   document-start: disable
   empty-lines:
     max: 2
+    max-end: 1
+  new-line-at-end-of-file: enable
   indentation:
     spaces: 2
     indent-sequences: whatever
