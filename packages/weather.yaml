@@ -65,6 +65,6 @@ script:
             if (isnan(id(ha_weather_temp).state)) {
               return std::string("--°C");
             }
-            char buf[16];
+            char buf[32];
             snprintf(buf, sizeof(buf), "%.1f°C", id(ha_weather_temp).state);
             return std::string(buf);

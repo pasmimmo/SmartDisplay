@@ -261,7 +261,7 @@ script:
             - lvgl.label.update:
                 id: notif_counter_label
                 text: !lambda |-
-                  char buf[16];
+                  char buf[32];
                   snprintf(
                     buf,
                     sizeof(buf),
@@ -308,7 +308,7 @@ script:
             std::string ssid = id(wifi_ssid).state.empty() ? "-" : id(wifi_ssid).state;
             const char *charging_str = id(charging_sensor).state ? "Charging" : "Battery";
 
-            char uptime_buf[24];
+            char uptime_buf[32];
             uint32_t total = (uint32_t) id(uptime_sensor).state;
             uint32_t days = total / 86400UL;
             total %= 86400UL;
@@ -377,7 +377,7 @@ script:
             if (isnan(id(ha_weather_temp).state)) {
               return std::string("--°C");
             }
-            char buf[16];
+            char buf[32];
             snprintf(buf, sizeof(buf), "%.1f°C", id(ha_weather_temp).state);
             return std::string(buf);
 

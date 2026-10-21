@@ -379,7 +379,7 @@ script:
             std::string ssid = id(wifi_ssid).state.empty() ? "-" : id(wifi_ssid).state;
             const char *charging_str = id(charging_sensor).state ? "Charging" : "Battery";
 
-            char uptime_buf[24];
+            char uptime_buf[32];
             uint32_t total = (uint32_t) id(uptime_sensor).state;
             uint32_t days = total / 86400UL;
             total %= 86400UL;

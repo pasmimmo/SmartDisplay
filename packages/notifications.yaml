@@ -152,7 +152,7 @@ script:
             - lvgl.label.update:
                 id: notif_counter_label
                 text: !lambda |-
-                  char buf[16];
+                  char buf[32];
                   snprintf(
                     buf,
                     sizeof(buf),
