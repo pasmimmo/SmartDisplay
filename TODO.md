@@ -21,17 +21,18 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
 ### Fase 1: Riorganizzazione del Codice (Modularizzazione & Best Practice)
 - [x] Inizializzare repository Git locale (`git init`)
 - [x] Creare `.gitignore` ottimizzato per ESPHome (`.esphome/`, build files, `secrets.yaml`, ecc.)
-- [x] Creare `secrets.yaml.example` con placeholder puliti
+- [x] Creare `secrets.yaml.example` con istruzioni in inglese
 - [x] Progettare e implementare architettura modulare a `packages/`:
-  - [x] `packages/core.yaml`: ESP32-S3, PSRAM octal, logging, OTA, Wi-Fi base, time SNTP, BLE
-  - [x] `packages/display.yaml`: Bus SPI, display GC9A01A, touchscreen CST816D, backlight LEDC
-  - [x] `packages/audio.yaml`: Bus I2C/I2S, DAC ES8311, amplificatore GPIO46, media_player
-  - [x] `packages/sensors.yaml`: ADC batteria GPIO1, sensore carica GPIO41, diagnostica (uptime, wifi)
-  - [x] `packages/fonts.yaml`: Font Roboto e icone Material Symbols Outlined
-  - [x] `packages/notifications.yaml`: Logica coda notifiche LIFO, HA API action `send_notification`, timeout
-  - [x] `packages/ui.yaml`: Pagine Home (orologio), Notifiche, Debug, Dialog cancellazione, Transizione
-- [x] Creare il file di configurazione master compatto (`minidisplay.yaml`) con `substitutions:` e inclusioni
-- [x] Mantenere copia monolitica all-in-one (`minidisplay_standalone.yaml`) per chi preferisce un unico file
+  - [x] `packages/core.yaml`: ESP32-S3, PSRAM octal, logging, OTA, Wi-Fi base, time SNTP, BLE passivo
+  - [x] `packages/display.yaml`: Bus SPI, display GC9A01A, touchscreen CST816D, backlight LEDC, script timer spegnimento e toggle
+  - [x] `packages/audio.yaml`: Bus I2C/I2S, DAC ES8311, amplificatore GPIO46, media_player per TTS
+  - [x] `packages/sensors.yaml`: ADC batteria GPIO1 con filtro median e attributi completi Home Assistant, sensore carica GPIO41, diagnostica
+  - [x] `packages/fonts.yaml`: Font Roboto e icone Material Symbols Outlined (notifiche e meteo)
+  - [x] `packages/notifications.yaml`: Coda LIFO, HA API action `send_notification`, parser colori pulito, timeout
+  - [x] `packages/weather.yaml`: Integrazione meteo HA con icone e temperature
+  - [x] `packages/ui.yaml`: Pagine Home (orologio + meteo), Notifiche, Debug, Dialog cancellazione, Transizione
+- [x] Refactoring generale: commenti in inglese in tutti i file, rimozione ridondanze, riordino degli script di gestione display
+- [x] Sincronizzazione continua della copia monolitica all-in-one (`minidisplay_standalone.yaml`)
 
 ---
 
