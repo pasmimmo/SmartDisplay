@@ -1,23 +1,30 @@
-# ============================================================
-# FONT & ICONE
-# ============================================================
+# ==============================================================================
+# FONTS & ICONS CONFIGURATION
+# ==============================================================================
+# - Typography: Google Fonts Roboto (Clock, Standard Text, Diagnostic labels)
+# - Iconography: Google Material Symbols Outlined (Notifications, Weather)
+# ==============================================================================
 
 font:
+  # Large digits for the standby clock display
   - file: "gfonts://Roboto"
     id: font_clock
     size: 70
     glyphs: "0123456789:"
 
+  # General body text for notification messages and buttons
   - file: "gfonts://Roboto"
     id: font_text
     size: 20
     glyphs: " !\"#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÀÁÈÉÌÍÒÓÙÚàáèéìíòóùúÄÖÜäöü°–—_[]{}"
 
+  # Smaller text for the debug page and notification counter
   - file: "gfonts://Roboto"
     id: font_debug
     size: 14
     glyphs: " !\"#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÀÁÈÉÌÍÒÓÙÚàáèéìíòóùúÄÖÜäöü°–—_[]{}"
 
+  # High-resolution icons for full-screen notifications (52px)
   - file: "gfonts://Material+Symbols+Outlined"
     id: font_icon
     size: 52
@@ -34,16 +41,17 @@ font:
       - "\U0000E7F4"  # notifications
       - "\U0000E872"  # delete
 
+  # Compact icons for the standby weather widget (26px)
   - file: "gfonts://Material+Symbols+Outlined"
     id: font_weather
     size: 26
     glyphs:
       - "\U0000E81A"  # sunny
-      - "\U0000F159"  # bedtime / clear-night
+      - "\U0000F159"  # bedtime (clear night)
       - "\U0000F172"  # partly_cloudy_day
       - "\U0000F15C"  # cloudy
       - "\U0000F176"  # rainy / pouring
       - "\U0000EBDB"  # thunderstorm
-      - "\U0000EB3B"  # ac_unit (snow/hail)
+      - "\U0000EB3B"  # ac_unit (snow / hail)
       - "\U0000E818"  # foggy
-      - "\U0000E846"  # thermostat
+      - "\U0000E846"  # thermometer (fallback)

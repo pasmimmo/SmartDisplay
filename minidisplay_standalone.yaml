@@ -1,7 +1,24 @@
+# ==============================================================================
+# SP-ESP32-S3-1.28-BOX Smart Display
+# Standalone All-In-One ESPHome Configuration
+# ==============================================================================
+# Target Hardware: ESP32-S3 1.28" Round Display with Touch, Audio & Battery
+# Display: GC9A01A (240x240 circular SPI)
+# Touch: CST816D (Capacitive I2C)
+# Audio DAC: ES8311 (I2S + I2C control)
+# ==============================================================================
+
+substitutions:
+  device_name: "minidisplay"
+  friendly_name: "MiniDisplay"
+  timezone: "Europe/Rome"
+  weather_entity: "weather.forecast_casa"
+  sleep_timeout: "300s"
+
 esphome:
-  name: minidisplay
-  friendly_name: MiniDisplay
-  min_version: 2026.8.2
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  min_version: 2024.6.0
   name_add_mac_suffix: false
   on_boot:
     priority: -100
@@ -17,12 +34,54 @@ esp32:
   framework:
     type: esp-idf
 
+# 8MB Octal SPI PSRAM at 80MHz
 psram:
   mode: octal
   speed: 80MHz
 
 logger:
   level: INFO
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: ${timezone}
+
+# Passive Bluetooth proxy mode to prevent audio stuttering during TTS
+esp32_ble_tracker:
+  scan_parameters:
+    active: false
+
+bluetooth_proxy:
+  active: false
+
+# ==============================================================================
+# NOTIFICATION SYSTEM (LIFO QUEUE)
+# ==============================================================================
+globals:
+  - id: notif_texts
+    type: std::vector<std::string>
+    restore_value: no
+
+  - id: notif_icons
+    type: std::vector<std::string>
+    restore_value: no
+
+  - id: notif_colors
+    type: std::vector<uint32_t>
+    restore_value: no
+
+  - id: current_notif_idx
+    type: int
+    restore_value: no
+    initial_value: '0'
 
 api:
   reboot_timeout: 0s
@@ -35,39 +94,38 @@ api:
         timeout: int
       then:
         - lambda: |-
-            uint32_t rgb = 0xFFFFFF;
+            uint32_t rgb = 0xFFFFFF; // Default: White
 
-            // Colori: accetta #RRGGBB, 0xRRGGBB, RRGGBB oppure nomi comuni.
+            // Parse color: accepts #RRGGBB, 0xRRGGBB, plain hex RRGGBB, or CSS color names
             if (!text_color.empty()) {
               if (text_color[0] == '#') {
                 rgb = strtoul(text_color.c_str() + 1, nullptr, 16) & 0xFFFFFF;
-              } else {
+              } else if (text_color.rfind("0x", 0) == 0 || text_color.rfind("0X", 0) == 0) {
+                rgb = strtoul(text_color.c_str() + 2, nullptr, 16) & 0xFFFFFF;
+              } else if (text_color == "red")     rgb = 0xFF0000;
+              else if (text_color == "green")   rgb = 0x00FF00;
+              else if (text_color == "blue")    rgb = 0x3399FF;
+              else if (text_color == "yellow")  rgb = 0xFFFF00;
+              else if (text_color == "orange")  rgb = 0xFF8800;
+              else if (text_color == "cyan")    rgb = 0x00FFFF;
+              else if (text_color == "magenta") rgb = 0xFF00FF;
+              else if (text_color == "black")   rgb = 0x000000;
+              else if (text_color == "white")   rgb = 0xFFFFFF;
+              else {
                 char *end = nullptr;
-                rgb = strtoul(text_color.c_str(), &end, 0) & 0xFFFFFF;
-                if (end == text_color.c_str()) {
-                  rgb = strtoul(text_color.c_str(), &end, 16) & 0xFFFFFF;
-                  if (end == text_color.c_str()) {
-                    if (text_color == "red") rgb = 0xFF0000;
-                    else if (text_color == "green") rgb = 0x00FF00;
-                    else if (text_color == "blue") rgb = 0x3399FF;
-                    else if (text_color == "yellow") rgb = 0xFFFF00;
-                    else if (text_color == "orange") rgb = 0xFF8800;
-                    else if (text_color == "cyan") rgb = 0x00FFFF;
-                    else if (text_color == "magenta") rgb = 0xFF00FF;
-                    else if (text_color == "black") rgb = 0x000000;
-                    else if (text_color == "white") rgb = 0xFFFFFF;
-                    else rgb = 0xFFFFFF;
-                  }
+                uint32_t parsed = strtoul(text_color.c_str(), &end, 16);
+                if (end != text_color.c_str()) {
+                  rgb = parsed & 0xFFFFFF;
                 }
               }
             }
 
-            // LIFO: inseriamo sempre la nuova notifica in testa.
+            // LIFO Queue: insert new notification at index 0
             id(notif_texts).insert(id(notif_texts).begin(), message);
             id(notif_icons).insert(id(notif_icons).begin(), icon);
             id(notif_colors).insert(id(notif_colors).begin(), rgb);
 
-            // Mantieni solo le ultime 10.
+            // Keep maximum 10 notifications
             while (id(notif_texts).size() > 10) {
               id(notif_texts).pop_back();
               id(notif_icons).pop_back();
@@ -75,12 +133,11 @@ api:
             }
 
             id(current_notif_idx) = 0;
-
             if (timeout < 0) timeout = 0;
 
             ESP_LOGI(
               "notify",
-              "Notifica: icon=%s timeout=%d message=%s",
+              "Notification received: icon=%s timeout=%ds message=%s",
               icon.c_str(), (int) timeout, message.c_str()
             );
 
@@ -98,44 +155,11 @@ api:
                   id: notification_timeout
                   timeout_sec: !lambda 'return timeout;'
 
-ota:
-  - platform: esphome
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-
-# ============================================================
-# ORA
-# ============================================================
-time:
-  - platform: sntp
-    id: sntp_time
-    timezone: Europe/Rome
-
-# ============================================================
-# NOTIFICHE
-# ============================================================
-globals:
-  - id: notif_texts
-    type: std::vector<std::string>
-    restore_value: no
-  - id: notif_icons
-    type: std::vector<std::string>
-    restore_value: no
-  - id: notif_colors
-    type: std::vector<uint32_t>
-    restore_value: no
-  - id: current_notif_idx
-    type: int
-    restore_value: no
-    initial_value: '0'
-
-# ============================================================
-# SCRIPT UI / ENERGIA
-# ============================================================
+# ==============================================================================
+# SCRIPTS (DISPLAY, POWER & UI)
+# ==============================================================================
 script:
-  # Timer display: solo quando siamo a batteria.
+  # Inactivity sleep timer: only active when running on battery
   - id: reset_sleep_timer
     mode: restart
     then:
@@ -143,7 +167,7 @@ script:
           condition:
             lambda: 'return !id(charging_sensor).state;'
           then:
-            - delay: 300s
+            - delay: ${sleep_timeout}
             - if:
                 condition:
                   lambda: 'return !id(charging_sensor).state;'
@@ -152,7 +176,7 @@ script:
                       id: display_backlight
                       transition_length: 0ms
 
-  # Doppio tap: durante la carica il display resta sempre acceso.
+  # Double-tap toggle handler
   - id: toggle_display
     mode: restart
     then:
@@ -178,7 +202,7 @@ script:
                       transition_length: 0ms
                   - script.execute: reset_sleep_timer
 
-  # Aggiorna i tre widget della notifica corrente.
+  # Updates the notification UI widgets
   - id: update_notification_ui
     mode: restart
     then:
@@ -191,7 +215,7 @@ script:
                 text: ""
             - lvgl.label.update:
                 id: notif_text_label
-                text: "Nessuna notifica"
+                text: "No notifications"
                 text_color: 0xFFFFFF
             - lvgl.label.update:
                 id: notif_counter_label
@@ -201,17 +225,17 @@ script:
                 id: notif_icon_label
                 text: !lambda |-
                   const auto &icon = id(notif_icons)[id(current_notif_idx)];
-                  if (icon == "warning") return std::string("\uE002");
-                  if (icon == "info") return std::string("\uE88E");
+                  if (icon == "warning")             return std::string("\uE002");
+                  if (icon == "info")                return std::string("\uE88E");
                   if (icon == "sentiment_satisfied") return std::string("\uE813");
-                  if (icon == "home") return std::string("\uE88A");
-                  if (icon == "window") return std::string("\uF088");
-                  if (icon == "thermometer") return std::string("\uE846");
-                  if (icon == "lightbulb") return std::string("\uE90F");
-                  if (icon == "lock") return std::string("\uE897");
-                  if (icon == "lock_open") return std::string("\uE898");
-                  if (icon == "notifications") return std::string("\uE7F4");
-                  if (icon == "delete") return std::string("\uE872");
+                  if (icon == "home")                return std::string("\uE88A");
+                  if (icon == "window")              return std::string("\uF088");
+                  if (icon == "thermometer")         return std::string("\uE846");
+                  if (icon == "lightbulb")           return std::string("\uE90F");
+                  if (icon == "lock")                return std::string("\uE897");
+                  if (icon == "lock_open")           return std::string("\uE898");
+                  if (icon == "notifications")       return std::string("\uE7F4");
+                  if (icon == "delete")              return std::string("\uE872");
                   return std::string("\uE7F4");
                 text_color: !lambda |-
                   const uint32_t rgb = id(notif_colors)[id(current_notif_idx)];
@@ -237,7 +261,7 @@ script:
                   );
                   return std::string(buf);
 
-  # Flash bianco tra una notifica e la successiva.
+  # Visual white flash transition between notifications
   - id: show_notification_transition
     mode: restart
     then:
@@ -250,7 +274,7 @@ script:
           id: notifications_page
           animation: NONE
 
-  # Timeout della notifica.
+  # Notification auto-dismiss timer
   - id: notification_timeout
     mode: restart
     parameters:
@@ -263,7 +287,7 @@ script:
           time: 120ms
       - script.execute: reset_sleep_timer
 
-  # Pagina debug aggiornata quando viene aperta.
+  # Updates device diagnostics page
   - id: update_debug_page
     mode: restart
     then:
@@ -272,7 +296,7 @@ script:
           text: !lambda |-
             std::string ip = id(ip_address).state.empty() ? "-" : id(ip_address).state;
             std::string ssid = id(wifi_ssid).state.empty() ? "-" : id(wifi_ssid).state;
-            const char *charging = id(charging_sensor).state ? "SI" : "NO";
+            const char *charging = id(charging_sensor).state ? "YES" : "NO";
 
             char uptime_buf[24];
             uint32_t total = (uint32_t) id(uptime_sensor).state;
@@ -296,7 +320,7 @@ script:
               "BOARD\nSP-ESP32-S3-1.28-BOX\n\n"
               "DEVICE\n%s\nESPHome %s\n\n"
               "NETWORK\nIP %s\nWi-Fi %s\nRSSI %.0f dBm\n\n"
-              "POWER\nBatteria %.0f %%\nIn carica %s\n\n"
+              "POWER\nBattery %.0f %%\nCharging %s\n\n"
               "UPTIME\n%s",
               App.get_name().c_str(),
               ESPHOME_VERSION,
@@ -309,6 +333,7 @@ script:
             );
             return std::string(buf);
 
+  # Updates outdoor weather icon and temperature
   - id: update_weather_ui
     mode: restart
     then:
@@ -316,26 +341,26 @@ script:
           id: weather_icon_label
           text: !lambda |-
             std::string cond = id(ha_weather_condition).state;
-            if (cond == "sunny") return std::string("\uE81A");
-            if (cond == "clear-night") return std::string("\uF159");
-            if (cond == "partlycloudy") return std::string("\uF172");
-            if (cond == "cloudy") return std::string("\uF15C");
-            if (cond == "rainy" || cond == "pouring") return std::string("\uF176");
+            if (cond == "sunny")                                 return std::string("\uE81A");
+            if (cond == "clear-night")                           return std::string("\uF159");
+            if (cond == "partlycloudy")                          return std::string("\uF172");
+            if (cond == "cloudy")                                return std::string("\uF15C");
+            if (cond == "rainy" || cond == "pouring")            return std::string("\uF176");
             if (cond == "lightning" || cond == "lightning-rainy") return std::string("\uEBDB");
             if (cond == "snowy" || cond == "snowy-rainy" || cond == "hail") return std::string("\uEB3B");
-            if (cond == "fog") return std::string("\uE818");
-            if (cond == "windy" || cond == "windy-variant") return std::string("\uF15C");
+            if (cond == "fog")                                   return std::string("\uE818");
+            if (cond == "windy" || cond == "windy-variant")      return std::string("\uF15C");
             return std::string("\uE846");
           text_color: !lambda |-
             std::string cond = id(ha_weather_condition).state;
-            if (cond == "sunny") return Color(0xFF, 0xB3, 0x00);
-            if (cond == "clear-night") return Color(0x80, 0xD8, 0xFF);
-            if (cond == "partlycloudy") return Color(0xFF, 0xCA, 0x28);
-            if (cond == "cloudy") return Color(0xB0, 0xBE, 0xC5);
-            if (cond == "rainy" || cond == "pouring") return Color(0x42, 0xA5, 0xF5);
+            if (cond == "sunny")                                 return Color(0xFF, 0xB3, 0x00);
+            if (cond == "clear-night")                           return Color(0x80, 0xD8, 0xFF);
+            if (cond == "partlycloudy")                          return Color(0xFF, 0xCA, 0x28);
+            if (cond == "cloudy")                                return Color(0xB0, 0xBE, 0xC5);
+            if (cond == "rainy" || cond == "pouring")            return Color(0x42, 0xA5, 0xF5);
             if (cond == "lightning" || cond == "lightning-rainy") return Color(0xFF, 0xD5, 0x4F);
             if (cond == "snowy" || cond == "snowy-rainy" || cond == "hail") return Color(0xE0, 0xF7, 0xFA);
-            if (cond == "fog") return Color(0x90, 0xA4, 0xAE);
+            if (cond == "fog")                                   return Color(0x90, 0xA4, 0xAE);
             return Color(0xFF, 0xFF, 0xFF);
 
       - lvgl.label.update:
@@ -348,18 +373,24 @@ script:
             snprintf(buf, sizeof(buf), "%.1f°C", id(ha_weather_temp).state);
             return std::string(buf);
 
-# ============================================================
-# SENSORI
-# ============================================================
+# ==============================================================================
+# SENSORS & DIAGNOSTICS
+# ==============================================================================
 sensor:
   - platform: adc
     pin: GPIO1
     id: battery_percentage
-    name: "Batteria"
+    name: "${friendly_name} Battery"
+    device_class: battery
+    state_class: measurement
+    unit_of_measurement: "%"
     attenuation: 12db
     update_interval: 60s
     filters:
       - multiply: 2.0
+      - median:
+          window_size: 5
+          send_every: 1
       - calibrate_linear:
           - 3.3 -> 0
           - 4.2 -> 100
@@ -369,19 +400,19 @@ sensor:
 
   - platform: wifi_signal
     id: wifi_signal_db
-    name: "WiFi Signal"
+    name: "${friendly_name} Wi-Fi Signal"
     update_interval: 30s
     entity_category: diagnostic
 
   - platform: uptime
     id: uptime_sensor
-    name: "Uptime"
+    name: "${friendly_name} Uptime"
     update_interval: 60s
     entity_category: diagnostic
 
   - platform: homeassistant
     id: ha_weather_temp
-    entity_id: weather.forecast_casa
+    entity_id: ${weather_entity}
     attribute: temperature
     internal: true
     on_value:
@@ -392,7 +423,7 @@ binary_sensor:
   - platform: gpio
     pin: GPIO41
     id: charging_sensor
-    name: "In Ricarica"
+    name: "${friendly_name} Charging Status"
     device_class: battery_charging
     on_press:
       - script.stop: reset_sleep_timer
@@ -406,34 +437,34 @@ text_sensor:
   - platform: wifi_info
     ip_address:
       id: ip_address
-      name: "IP Address"
+      name: "${friendly_name} IP Address"
       entity_category: diagnostic
     ssid:
       id: wifi_ssid
-      name: "WiFi SSID"
+      name: "${friendly_name} Wi-Fi SSID"
       entity_category: diagnostic
     mac_address:
       id: wifi_mac
-      name: "WiFi MAC Address"
+      name: "${friendly_name} Wi-Fi MAC Address"
       entity_category: diagnostic
 
   - platform: version
-    name: "ESPHome Version"
+    name: "${friendly_name} ESPHome Version"
     id: esphome_version_text
     hide_timestamp: true
     entity_category: diagnostic
 
   - platform: homeassistant
     id: ha_weather_condition
-    entity_id: weather.forecast_casa
+    entity_id: ${weather_entity}
     internal: true
     on_value:
       then:
         - script.execute: update_weather_ui
 
-# ============================================================
-# BACKLIGHT
-# ============================================================
+# ==============================================================================
+# BACKLIGHT (PWM)
+# ==============================================================================
 output:
   - platform: ledc
     pin:
@@ -445,12 +476,12 @@ light:
   - platform: monochromatic
     output: backlight_pwm
     id: display_backlight
-    name: "Luce Schermo"
+    name: "${friendly_name} Backlight"
     restore_mode: ALWAYS_ON
 
-# ============================================================
-# AUDIO ES8311 / I2S
-# ============================================================
+# ==============================================================================
+# AUDIO ES8311 & I2S MEDIA PLAYER
+# ==============================================================================
 i2c:
   - id: i2c_touch
     sda: GPIO11
@@ -485,7 +516,7 @@ i2s_audio:
 switch:
   - platform: gpio
     id: audio_amp
-    name: "Amplificatore Audio"
+    name: "${friendly_name} Audio Amplifier"
     internal: true
     pin:
       number: GPIO46
@@ -507,7 +538,7 @@ speaker:
 
 media_player:
   - platform: speaker
-    name: "Altoparlante MiniDisplay"
+    name: "${friendly_name} Speaker"
     volume_initial: 80%
     volume_min: 0%
     volume_max: 100%
@@ -520,9 +551,9 @@ media_player:
       sample_rate: 24000
       num_channels: 1
 
-# ============================================================
-# DISPLAY GC9A01A / TOUCH CST816D
-# ============================================================
+# ==============================================================================
+# DISPLAY GC9A01A & TOUCHSCREEN CST816D
+# ==============================================================================
 spi:
   - id: spi_bus
     clk_pin: GPIO4
@@ -553,9 +584,9 @@ touchscreen:
     interrupt_pin: GPIO12
     reset_pin: GPIO6
 
-# ============================================================
-# FONT
-# ============================================================
+# ==============================================================================
+# FONTS & ICONS
+# ==============================================================================
 font:
   - file: "gfonts://Roboto"
     id: font_clock
@@ -576,17 +607,17 @@ font:
     id: font_icon
     size: 52
     glyphs:
-      - "\U0000E002"
-      - "\U0000E88E"
-      - "\U0000E813"
-      - "\U0000E88A"
-      - "\U0000F088"
-      - "\U0000E846"
-      - "\U0000E90F"
-      - "\U0000E897"
-      - "\U0000E898"
-      - "\U0000E7F4"
-      - "\U0000E872"
+      - "\U0000E002"  # warning
+      - "\U0000E88E"  # info
+      - "\U0000E813"  # sentiment_satisfied
+      - "\U0000E88A"  # home
+      - "\U0000F088"  # window
+      - "\U0000E846"  # thermometer
+      - "\U0000E90F"  # lightbulb
+      - "\U0000E897"  # lock
+      - "\U0000E898"  # lock_open
+      - "\U0000E7F4"  # notifications
+      - "\U0000E872"  # delete
 
   - file: "gfonts://Material+Symbols+Outlined"
     id: font_weather
@@ -602,17 +633,14 @@ font:
       - "\U0000E818"  # foggy
       - "\U0000E846"  # thermostat
 
-# ============================================================
-# LVGL
-# ============================================================
+# ==============================================================================
+# LVGL USER INTERFACE
+# ==============================================================================
 lvgl:
   displays:
     - my_display
 
-  # 12% usa un buffer molto più piccolo, lasciando il framebuffer principale
-  # in RAM interna quando possibile e riducendo il traffico inutile.
   buffer_size: 12%
-
   log_level: WARN
 
   touchscreens:
@@ -621,9 +649,9 @@ lvgl:
       long_press_repeat_time: 65535ms
 
   pages:
-    # ----------------------------------------------------------
-    # HOME
-    # ----------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # 1. HOME / STANDBY (Clock + Outdoor Weather)
+    # --------------------------------------------------------------------------
     - id: home_page
       bg_color: 0x000000
       bg_opa: COVER
@@ -692,9 +720,9 @@ lvgl:
               time: 180ms
           - script.execute: reset_sleep_timer
 
-    # ----------------------------------------------------------
-    # NOTIFICHE
-    # ----------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # 2. NOTIFICATIONS
+    # --------------------------------------------------------------------------
     - id: notifications_page
       bg_color: 0x000000
       bg_opa: COVER
@@ -715,7 +743,7 @@ lvgl:
 
         - label:
             id: notif_text_label
-            text: "Nessuna notifica"
+            text: "No notifications"
             align: CENTER
             y: 18
             width: 210
@@ -775,9 +803,9 @@ lvgl:
               time: 180ms
           - script.execute: reset_sleep_timer
 
-    # ----------------------------------------------------------
-    # DEBUG
-    # ----------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # 3. DIAGNOSTICS & DEBUG
+    # --------------------------------------------------------------------------
     - id: debug_page
       bg_color: 0x000000
       bg_opa: COVER
@@ -785,7 +813,7 @@ lvgl:
       widgets:
         - label:
             id: debug_info_label
-            text: "Caricamento..."
+            text: "Loading diagnostics..."
             align: CENTER
             width: 220
             height: 215
@@ -812,9 +840,9 @@ lvgl:
         then:
           - script.execute: toggle_display
 
-    # ----------------------------------------------------------
-    # CONFERMA CANCELLAZIONE
-    # ----------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # 4. DELETE CONFIRMATION MODAL
+    # --------------------------------------------------------------------------
     - id: delete_page
       bg_color: 0x000000
       bg_opa: COVER
@@ -830,6 +858,7 @@ lvgl:
             clickable: false
             bg_opa: TRANSP
 
+        # NO Button (Green: safe)
         - button:
             x: 38
             y: 130
@@ -849,6 +878,7 @@ lvgl:
                   time: 120ms
               - script.execute: reset_sleep_timer
 
+        # SI Button (Red: destructive)
         - button:
             x: 134
             y: 130
@@ -874,18 +904,16 @@ lvgl:
                   time: 120ms
               - script.execute: reset_sleep_timer
 
-    # ----------------------------------------------------------
-    # FLASH BIANCO
-    # ----------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # 5. WHITE FLASH TRANSITION
+    # --------------------------------------------------------------------------
     - id: transition_page
       bg_color: 0xFFFFFF
       bg_opa: COVER
       scrollable: false
       widgets: []
 
-# ============================================================
-# CLOCK UPDATE
-# ============================================================
+# Standby clock update every 10 seconds
 interval:
   - interval: 10s
     then:
@@ -895,10 +923,3 @@ interval:
             auto now = id(sntp_time).now();
             if (!now.is_valid()) return std::string("--:--");
             return now.strftime("%H:%M");
-            
-esp32_ble_tracker:
-  scan_parameters:
-    active: false
-
-bluetooth_proxy:
-  active: false

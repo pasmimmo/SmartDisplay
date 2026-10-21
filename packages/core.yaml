@@ -1,6 +1,8 @@
-# ============================================================
-# CORE & SISTEMA BASE
-# ============================================================
+# ==============================================================================
+# CORE & BASE SYSTEM
+# ==============================================================================
+# Defines the MCU architecture, PSRAM, networking, OTA, and time services.
+# ==============================================================================
 
 substitutions:
   device_name: "minidisplay"
@@ -26,6 +28,7 @@ esp32:
   framework:
     type: esp-idf
 
+# 8MB Octal SPI PSRAM running at 80MHz (required for audio buffering and LVGL)
 psram:
   mode: octal
   speed: 80MHz
@@ -40,15 +43,18 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
 
+# Synchronize time via SNTP for the clock display
 time:
   - platform: sntp
     id: sntp_time
     timezone: ${timezone}
 
+# Passive Bluetooth proxy mode:
+# Active scanning is disabled to preserve RAM and avoid 2.4GHz Wi-Fi / BT coexistence
+# audio stuttering during TTS playback.
 esp32_ble_tracker:
   scan_parameters:
     active: false
 
 bluetooth_proxy:
   active: false
-

@@ -1,6 +1,10 @@
-# ============================================================
-# METEO DA HOME ASSISTANT
-# ============================================================
+# ==============================================================================
+# WEATHER INTEGRATION (HOME ASSISTANT)
+# ==============================================================================
+# - Pulls outdoor temperature and weather conditions from Home Assistant
+# - Maps weather states to Material Symbols and thematic accent colors
+# - Displays current condition and temperature on the standby home screen
+# ==============================================================================
 
 substitutions:
   weather_entity: "weather.forecast_casa"
@@ -25,6 +29,7 @@ text_sensor:
         - script.execute: update_weather_ui
 
 script:
+  # Refreshes the weather icon and temperature label on the home page
   - id: update_weather_ui
     mode: restart
     then:
@@ -32,27 +37,27 @@ script:
           id: weather_icon_label
           text: !lambda |-
             std::string cond = id(ha_weather_condition).state;
-            if (cond == "sunny") return std::string("\uE81A");
-            if (cond == "clear-night") return std::string("\uF159");
-            if (cond == "partlycloudy") return std::string("\uF172");
-            if (cond == "cloudy") return std::string("\uF15C");
-            if (cond == "rainy" || cond == "pouring") return std::string("\uF176");
+            if (cond == "sunny")                                 return std::string("\uE81A");
+            if (cond == "clear-night")                           return std::string("\uF159");
+            if (cond == "partlycloudy")                          return std::string("\uF172");
+            if (cond == "cloudy")                                return std::string("\uF15C");
+            if (cond == "rainy" || cond == "pouring")            return std::string("\uF176");
             if (cond == "lightning" || cond == "lightning-rainy") return std::string("\uEBDB");
             if (cond == "snowy" || cond == "snowy-rainy" || cond == "hail") return std::string("\uEB3B");
-            if (cond == "fog") return std::string("\uE818");
-            if (cond == "windy" || cond == "windy-variant") return std::string("\uF15C");
-            return std::string("\uE846");
+            if (cond == "fog")                                   return std::string("\uE818");
+            if (cond == "windy" || cond == "windy-variant")      return std::string("\uF15C");
+            return std::string("\uE846"); // Fallback: thermometer
           text_color: !lambda |-
             std::string cond = id(ha_weather_condition).state;
-            if (cond == "sunny") return Color(0xFF, 0xB3, 0x00);
-            if (cond == "clear-night") return Color(0x80, 0xD8, 0xFF);
-            if (cond == "partlycloudy") return Color(0xFF, 0xCA, 0x28);
-            if (cond == "cloudy") return Color(0xB0, 0xBE, 0xC5);
-            if (cond == "rainy" || cond == "pouring") return Color(0x42, 0xA5, 0xF5);
-            if (cond == "lightning" || cond == "lightning-rainy") return Color(0xFF, 0xD5, 0x4F);
-            if (cond == "snowy" || cond == "snowy-rainy" || cond == "hail") return Color(0xE0, 0xF7, 0xFA);
-            if (cond == "fog") return Color(0x90, 0xA4, 0xAE);
-            return Color(0xFF, 0xFF, 0xFF);
+            if (cond == "sunny")                                 return Color(0xFF, 0xB3, 0x00); // Warm amber
+            if (cond == "clear-night")                           return Color(0x80, 0xD8, 0xFF); // Night sky blue
+            if (cond == "partlycloudy")                          return Color(0xFF, 0xCA, 0x28); // Golden yellow
+            if (cond == "cloudy")                                return Color(0xB0, 0xBE, 0xC5); // Light grey
+            if (cond == "rainy" || cond == "pouring")            return Color(0x42, 0xA5, 0xF5); // Rain blue
+            if (cond == "lightning" || cond == "lightning-rainy") return Color(0xFF, 0xD5, 0x4F); // Lightning yellow
+            if (cond == "snowy" || cond == "snowy-rainy" || cond == "hail") return Color(0xE0, 0xF7, 0xFA); // Ice cyan
+            if (cond == "fog")                                   return Color(0x90, 0xA4, 0xAE); // Fog grey
+            return Color(0xFF, 0xFF, 0xFF); // Default white
 
       - lvgl.label.update:
           id: weather_temp_label

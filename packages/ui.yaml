@@ -1,11 +1,20 @@
-# ============================================================
-# INTERFACCIA UTENTE LVGL & PAGINE
-# ============================================================
+# ==============================================================================
+# LVGL GRAPHICAL USER INTERFACE & PAGES
+# ==============================================================================
+# - Pages:
+#     1. home_page: Standby clock, weather widget, gestures
+#     2. notifications_page: Interactive notification cards (LIFO queue)
+#     3. debug_page: System hardware, network, battery & uptime status
+#     4. delete_page: Clear notifications confirmation modal
+#     5. transition_page: White flash visual effect
+# ==============================================================================
 
 lvgl:
   displays:
     - my_display
 
+  # 12% buffer size keeps the draw buffer inside fast internal SRAM,
+  # avoiding PSRAM bus contention and screen tearing on SPI round displays.
   buffer_size: 12%
   log_level: WARN
 
@@ -15,14 +24,15 @@ lvgl:
       long_press_repeat_time: 65535ms
 
   pages:
-    # ----------------------------------------------------------
-    # HOME PAGE (Orologio + Meteo)
-    # ----------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # 1. HOME / STANDBY PAGE (Clock + Outdoor Weather)
+    # --------------------------------------------------------------------------
     - id: home_page
       bg_color: 0x000000
       bg_opa: COVER
       scrollable: false
       widgets:
+        # Digital Clock (HH:MM)
         - label:
             id: clock_label
             text: "--:--"
@@ -33,6 +43,7 @@ lvgl:
             clickable: false
             bg_opa: TRANSP
 
+        # Weather Condition Icon
         - label:
             id: weather_icon_label
             text: "\uE846"
@@ -44,6 +55,7 @@ lvgl:
             clickable: false
             bg_opa: TRANSP
 
+        # Outdoor Temperature
         - label:
             id: weather_temp_label
             text: "--°C"
@@ -55,10 +67,12 @@ lvgl:
             clickable: false
             bg_opa: TRANSP
 
+      # Refresh weather when navigating back to home
       on_load:
         then:
           - script.execute: update_weather_ui
 
+      # Swipe down from clock: Open notification history
       on_swipe_down:
         then:
           - if:
@@ -69,10 +83,12 @@ lvgl:
                 - script.execute: show_notification_transition
                 - script.execute: reset_sleep_timer
 
+      # Double click on clock: Turn display on/off
       on_double_click:
         then:
           - script.execute: toggle_display
 
+      # Long press on clock: Open system diagnostics page
       on_long_press:
         then:
           - light.turn_on:
@@ -86,9 +102,9 @@ lvgl:
               time: 180ms
           - script.execute: reset_sleep_timer
 
-    # ----------------------------------------------------------
-    # NOTIFICHE (Icona + Testo + Contatore)
-    # ----------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # 2. NOTIFICATIONS PAGE (Icon, Message, and Position Counter)
+    # --------------------------------------------------------------------------
     - id: notifications_page
       bg_color: 0x000000
       bg_opa: COVER
@@ -109,7 +125,7 @@ lvgl:
 
         - label:
             id: notif_text_label
-            text: "Nessuna notifica"
+            text: "No notifications"
             align: CENTER
             y: 18
             width: 210
@@ -132,6 +148,7 @@ lvgl:
             clickable: false
             bg_opa: TRANSP
 
+      # Swipe Left: Older notification
       on_swipe_left:
         then:
           - if:
@@ -142,6 +159,7 @@ lvgl:
                 - script.execute: show_notification_transition
                 - script.execute: reset_sleep_timer
 
+      # Swipe Right: Newer notification
       on_swipe_right:
         then:
           - if:
@@ -152,6 +170,7 @@ lvgl:
                 - script.execute: show_notification_transition
                 - script.execute: reset_sleep_timer
 
+      # Swipe Up: Return to clock home page
       on_swipe_up:
         then:
           - lvgl.page.show:
@@ -160,6 +179,7 @@ lvgl:
               time: 180ms
           - script.execute: reset_sleep_timer
 
+      # Swipe Down: Open confirmation dialog to delete all notifications
       on_swipe_down:
         then:
           - script.stop: notification_timeout
@@ -169,9 +189,9 @@ lvgl:
               time: 180ms
           - script.execute: reset_sleep_timer
 
-    # ----------------------------------------------------------
-    # DEBUG (Diagnostica Hardware & Rete)
-    # ----------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # 3. DIAGNOSTICS & DEBUG PAGE
+    # --------------------------------------------------------------------------
     - id: debug_page
       bg_color: 0x000000
       bg_opa: COVER
@@ -179,7 +199,7 @@ lvgl:
       widgets:
         - label:
             id: debug_info_label
-            text: "Caricamento..."
+            text: "Loading diagnostics..."
             align: CENTER
             width: 220
             height: 215
@@ -206,9 +226,9 @@ lvgl:
         then:
           - script.execute: toggle_display
 
-    # ----------------------------------------------------------
-    # CONFERMA CANCELLAZIONE NOTIFICHE
-    # ----------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # 4. DELETE CONFIRMATION MODAL
+    # --------------------------------------------------------------------------
     - id: delete_page
       bg_color: 0x000000
       bg_opa: COVER
@@ -224,7 +244,7 @@ lvgl:
             clickable: false
             bg_opa: TRANSP
 
-        # Pulsante NO (Verde: Annulla / Mantieni notifiche)
+        # NO Button (Green: safe action to dismiss modal and retain notifications)
         - button:
             x: 38
             y: 130
@@ -244,7 +264,7 @@ lvgl:
                   time: 120ms
               - script.execute: reset_sleep_timer
 
-        # Pulsante SI (Rosso: Azione distruttiva / Cancella)
+        # SI Button (Red: destructive action to clear all notifications)
         - button:
             x: 134
             y: 130
@@ -270,9 +290,9 @@ lvgl:
                   time: 120ms
               - script.execute: reset_sleep_timer
 
-    # ----------------------------------------------------------
-    # TRANSIZIONE BIANCA
-    # ----------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # 5. WHITE FLASH TRANSITION PAGE
+    # --------------------------------------------------------------------------
     - id: transition_page
       bg_color: 0xFFFFFF
       bg_opa: COVER
@@ -280,7 +300,7 @@ lvgl:
       widgets: []
 
 script:
-  # Aggiorna la schermata di debug
+  # Formats device diagnostics into a multi-line status text
   - id: update_debug_page
     mode: restart
     then:
@@ -289,7 +309,7 @@ script:
           text: !lambda |-
             std::string ip = id(ip_address).state.empty() ? "-" : id(ip_address).state;
             std::string ssid = id(wifi_ssid).state.empty() ? "-" : id(wifi_ssid).state;
-            const char *charging = id(charging_sensor).state ? "SI" : "NO";
+            const char *charging = id(charging_sensor).state ? "YES" : "NO";
 
             char uptime_buf[24];
             uint32_t total = (uint32_t) id(uptime_sensor).state;
@@ -313,7 +333,7 @@ script:
               "BOARD\nSP-ESP32-S3-1.28-BOX\n\n"
               "DEVICE\n%s\nESPHome %s\n\n"
               "NETWORK\nIP %s\nWi-Fi %s\nRSSI %.0f dBm\n\n"
-              "POWER\nBatteria %.0f %%\nIn carica %s\n\n"
+              "POWER\nBattery %.0f %%\nCharging %s\n\n"
               "UPTIME\n%s",
               App.get_name().c_str(),
               ESPHOME_VERSION,
@@ -326,7 +346,7 @@ script:
             );
             return std::string(buf);
 
-# Aggiornamento orologio ogni 10s
+# Periodically updates the digital clock every 10 seconds
 interval:
   - interval: 10s
     then:
@@ -336,4 +356,3 @@ interval:
             auto now = id(sntp_time).now();
             if (!now.is_valid()) return std::string("--:--");
             return now.strftime("%H:%M");
-

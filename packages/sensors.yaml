@@ -1,16 +1,30 @@
-# ============================================================
-# SENSORI, BATTERIA E DIAGNOSTICA
-# ============================================================
+# ==============================================================================
+# SENSORS, BATTERY MANAGEMENT & DIAGNOSTICS
+# ==============================================================================
+# - Battery: ADC voltage divider on GPIO1 (3.3V - 4.2V mapped to 0% - 100%)
+# - Charging: GPIO41 input detecting external USB power
+# - Diagnostics: Wi-Fi RSSI, IP, SSID, MAC, Uptime, ESPHome Version
+# ==============================================================================
+
+substitutions:
+  friendly_name: "MiniDisplay"
 
 sensor:
+  # Onboard battery voltage via ADC with 2:1 resistive divider
   - platform: adc
     pin: GPIO1
     id: battery_percentage
-    name: "${friendly_name} Batteria"
+    name: "${friendly_name} Battery"
+    device_class: battery
+    state_class: measurement
+    unit_of_measurement: "%"
     attenuation: 12db
     update_interval: 60s
     filters:
       - multiply: 2.0
+      - median:
+          window_size: 5
+          send_every: 1
       - calibrate_linear:
           - 3.3 -> 0
           - 4.2 -> 100
@@ -20,7 +34,7 @@ sensor:
 
   - platform: wifi_signal
     id: wifi_signal_db
-    name: "${friendly_name} WiFi Signal"
+    name: "${friendly_name} Wi-Fi Signal"
     update_interval: 30s
     entity_category: diagnostic
 
@@ -31,10 +45,11 @@ sensor:
     entity_category: diagnostic
 
 binary_sensor:
+  # High when USB-C charging cable is connected
   - platform: gpio
     pin: GPIO41
     id: charging_sensor
-    name: "${friendly_name} In Ricarica"
+    name: "${friendly_name} Charging Status"
     device_class: battery_charging
     on_press:
       - script.stop: reset_sleep_timer
@@ -52,11 +67,11 @@ text_sensor:
       entity_category: diagnostic
     ssid:
       id: wifi_ssid
-      name: "${friendly_name} WiFi SSID"
+      name: "${friendly_name} Wi-Fi SSID"
       entity_category: diagnostic
     mac_address:
       id: wifi_mac
-      name: "${friendly_name} WiFi MAC Address"
+      name: "${friendly_name} Wi-Fi MAC Address"
       entity_category: diagnostic
 
   - platform: version
@@ -64,4 +79,3 @@ text_sensor:
     id: esphome_version_text
     hide_timestamp: true
     entity_category: diagnostic
-

@@ -1,6 +1,14 @@
-# ============================================================
-# DISPLAY GC9A01A & TOUCHSCREEN CST816
-# ============================================================
+# ==============================================================================
+# DISPLAY, TOUCHSCREEN & BACKLIGHT CONTROL
+# ==============================================================================
+# - Display: GC9A01A 240x240 circular LCD over SPI bus (40MHz)
+# - Touchscreen: CST816D capacitive touch controller over dedicated I2C bus
+# - Backlight: Inverted LEDC PWM on GPIO42 with auto-sleep and toggle scripts
+# ==============================================================================
+
+substitutions:
+  friendly_name: "MiniDisplay"
+  sleep_timeout: "300s"
 
 spi:
   - id: spi_bus
@@ -25,6 +33,7 @@ display:
     auto_clear_enabled: false
     update_interval: never
 
+# Dedicated I2C bus for the CST816D touchscreen
 i2c:
   - id: i2c_touch
     sda: GPIO11
@@ -39,6 +48,7 @@ touchscreen:
     interrupt_pin: GPIO12
     reset_pin: GPIO6
 
+# Backlight PWM output (hardware signal is active LOW, so inverted: true)
 output:
   - platform: ledc
     pin:
@@ -50,6 +60,52 @@ light:
   - platform: monochromatic
     output: backlight_pwm
     id: display_backlight
-    name: "${friendly_name} Luce Schermo"
+    name: "${friendly_name} Backlight"
     restore_mode: ALWAYS_ON
 
+script:
+  # Inactivity sleep timer: automatically turns off the screen after sleep_timeout,
+  # but ONLY when running on battery power. Keeps screen permanently on while charging.
+  - id: reset_sleep_timer
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return !id(charging_sensor).state;'
+          then:
+            - delay: ${sleep_timeout}
+            - if:
+                condition:
+                  lambda: 'return !id(charging_sensor).state;'
+                then:
+                  - light.turn_off:
+                      id: display_backlight
+                      transition_length: 0ms
+
+  # Display toggle handler (triggered by double-tap gesture):
+  # - If charging: keeps the display on.
+  # - If on battery: toggles display backlight on/off.
+  - id: toggle_display
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return id(charging_sensor).state;'
+          then:
+            - light.turn_on:
+                id: display_backlight
+                transition_length: 0ms
+          else:
+            - if:
+                condition:
+                  lambda: 'return id(display_backlight).current_values.is_on();'
+                then:
+                  - script.stop: reset_sleep_timer
+                  - light.turn_off:
+                      id: display_backlight
+                      transition_length: 0ms
+                else:
+                  - light.turn_on:
+                      id: display_backlight
+                      transition_length: 0ms
+                  - script.execute: reset_sleep_timer

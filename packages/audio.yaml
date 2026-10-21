@@ -1,7 +1,16 @@
-# ============================================================
-# AUDIO ES8311 & I2S MEDIA PLAYER
-# ============================================================
+# ==============================================================================
+# AUDIO PIPELINE & MEDIA PLAYER
+# ==============================================================================
+# - Audio DAC: Everest ES8311 over dedicated I2C bus (address 0x18)
+# - I2S Digital Audio: MCLK GPIO16, BCLK GPIO9, LRCLK GPIO45, DOUT GPIO8
+# - Power Amp: Onboard amplifier enable switch on GPIO46
+# - Media Player: Integrated with Home Assistant announcement pipeline (TTS/WAV)
+# ==============================================================================
 
+substitutions:
+  friendly_name: "MiniDisplay"
+
+# Dedicated I2C bus for the ES8311 audio codec
 i2c:
   - id: i2c_audio
     sda: GPIO15
@@ -27,10 +36,12 @@ i2s_audio:
       number: GPIO45
       ignore_strapping_warning: true
 
+# Amplifier enable pin:
+# Kept internal and ALWAYS_ON to prevent audible "click/pop" noises during standby transitions.
 switch:
   - platform: gpio
     id: audio_amp
-    name: "${friendly_name} Amplificatore Audio"
+    name: "${friendly_name} Audio Amplifier"
     internal: true
     pin:
       number: GPIO46
@@ -50,9 +61,10 @@ speaker:
     buffer_duration: 50ms
     timeout: 500ms
 
+# Home Assistant Media Player entity for text-to-speech (TTS) announcements
 media_player:
   - platform: speaker
-    name: "${friendly_name} Altoparlante"
+    name: "${friendly_name} Speaker"
     volume_initial: 80%
     volume_min: 0%
     volume_max: 100%
@@ -64,4 +76,3 @@ media_player:
       format: WAV
       sample_rate: 24000
       num_channels: 1
-

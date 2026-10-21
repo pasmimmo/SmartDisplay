@@ -1,15 +1,28 @@
-# ============================================================
+# ==============================================================================
 # SP-ESP32-S3-1.28-BOX Smart Display
-# Configurazione Principale ESPHome (Architettura Modulare)
-# ============================================================
+# ESPHome Modular Firmware Configuration
+# ==============================================================================
+# Target Hardware: ESP32-S3 1.28" Round Display with Touch, Audio & Battery
+# Display: GC9A01A (240x240 circular SPI)
+# Touch: CST816D (Capacitive I2C)
+# Audio DAC: ES8311 (I2S + I2C control)
+# ==============================================================================
 
 substitutions:
+  # Unique device hostname and Home Assistant entity prefix
   device_name: "minidisplay"
   friendly_name: "MiniDisplay"
+
+  # Timezone for SNTP clock synchronization
   timezone: "Europe/Rome"
+
+  # Home Assistant weather entity for the standby clock page
   weather_entity: "weather.forecast_casa"
 
-# Inclusione dei singoli moduli hardware e software
+  # Inactivity timeout before turning off display backlight when on battery
+  sleep_timeout: "300s"
+
+# Modular package imports
 packages:
   core: !include packages/core.yaml
   display: !include packages/display.yaml
