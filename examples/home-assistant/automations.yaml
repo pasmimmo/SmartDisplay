@@ -88,3 +88,21 @@
         text_color: "orange"
         timeout: 90
 
+# ------------------------------------------------------------------------------
+# 5. Houseplant Needs Water (Xiaomi Mi Flora via BLE Proxy)
+# ------------------------------------------------------------------------------
+- id: minidisplay_plant_watering_alert
+  alias: "MiniDisplay - Plant Watering Alert"
+  description: "Alerts when a houseplant's soil moisture drops below threshold"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.monstera_soil_moisture
+      below: 20
+  action:
+    - action: esphome.minidisplay_send_notification
+      data:
+        message: "Your Monstera needs water! Moisture is low (18%)."
+        icon: "home"
+        text_color: "green"
+        timeout: 120
+

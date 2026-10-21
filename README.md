@@ -167,12 +167,31 @@ The display backlight is controlled by a 1kHz PWM signal on `GPIO42`, exposed in
 
 ---
 
-### 5. Bluetooth Proxy: Xiaomi Mi Flora & Plant Sensors
-The firmware includes a **passive Bluetooth Proxy** (`bluetooth_proxy: active: false`).
+### 5. Bluetooth Proxy: Whole-Home BLE Extension
+The firmware integrates ESPHome's **passive Bluetooth Proxy** (`bluetooth_proxy: active: false`), allowing the MiniDisplay to double as a long-range Bluetooth antenna for Home Assistant.
 
-* **Real-World Use Case:** If you have **Xiaomi Mi Flora / Flower Care** soil moisture & fertility sensors in your houseplants, or BTHome / Qingping BLE beacons, they broadcast telemetry packets periodically.
-* **How It Works:** MiniDisplay listens passively for these BLE advertisements and forwards them directly to Home Assistant over Wi-Fi, dramatically extending your smart home BLE coverage.
-* **Why Passive Mode?** Active Bluetooth connections can cause audio stuttering and consume excess RAM on the ESP32-S3. Passive mode captures all plant sensor data with zero latency, zero connection drops, and zero impact on TTS audio playback.
+#### Supported Devices & Examples
+By placing the MiniDisplay in your living room, bedroom, or office, Home Assistant can automatically discover and communicate with nearby Bluetooth smart devices without requiring expensive dedicated hubs:
+* **💡 Smart Lighting & Bulbs:** Philips Hue BLE lamps, Yeelight BLE bulbs, and Tuya Bluetooth lights.
+* **🌡️ Climate & Room Sensors:** Xiaomi Mijia E-Ink thermometers (`LYWSD03MMC`), Qingping Air Monitors, ThermoPro BLE sensors, and BTHome beacons.
+* **🚪 Security & Motion:** Shelly BLU door/window contacts, Shelly BLU motion detectors, and SwitchBot curtain / bot motors.
+* **🏷️ Presence & Proximity:** iBeacon keychains and smartwatch proximity beacons for room presence tracking.
+
+#### 🌱 Author's Real-World Setup: Xiaomi Mi Flora Plant Care
+> The author specifically built this setup to monitor house plants in the room!
+> 
+> * **The Problem:** **Xiaomi Mi Flora (Flower Care)** soil moisture and fertility probes broadcast telemetry using Bluetooth Low Energy (BLE), but their small antennas often fail to reach the main Home Assistant server across multiple walls.
+> * **The Solution:** Sitting on a desk or plant stand, the MiniDisplay passively captures the BLE broadcast packets (soil moisture, fertilizer conductivity, sunlight lux, and temperature) and seamlessly forwards them to Home Assistant over Wi-Fi.
+> * **Why Passive Mode?** Active Bluetooth pairing consumes heavy RAM and can cause audio stuttering. Passive mode (`active: false`) captures 100% of the plant telemetry without establishing connections, keeping TTS audio crystal-clear while ensuring your plants never dry out!
+> * **Full Circle Automation:** When soil moisture drops below 20%, Home Assistant automatically triggers a notification card directly on the MiniDisplay:
+>   ```yaml
+>   action: esphome.minidisplay_send_notification
+>   data:
+>     message: "Ficus lyrata needs water! Soil moisture is at 15%."
+>     icon: "home"
+>     text_color: "green"
+>     timeout: 60
+>   ```
 
 ---
 
