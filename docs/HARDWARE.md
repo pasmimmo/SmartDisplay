@@ -78,14 +78,6 @@ The device's built-in 2.4GHz radio is configured as an ESPHome **passive Bluetoo
 * **Security & Automation:** Shelly BLU door/window contacts, Shelly BLU motion sensors, SwitchBot motors.
 * **Beacons & Trackers:** iBeacon presence tags and smartwatch proximity broadcasts.
 
-### Author's Daily Setup: Xiaomi Mi Flora Plant Monitoring
-* **Architecture:** **Xiaomi Mi Flora (Flower Care)** sensors broadcast soil moisture, conductivity (fertility), temperature, and sunlight levels via non-connectable BLE advertisement frames.
-* **Passive Interception:** In `active: false` mode, the ESP32-S3 radio silently listens on Bluetooth channels 37, 38, and 39. Every incoming telemetry frame is encapsulated and transmitted over Wi-Fi to Home Assistant's native Bluetooth integration.
-* **Key Advantages:**
-  - **Zero Wi-Fi Coexistence Stutter:** Audio playback and Wi-Fi data never suffer from connection negotiation drops.
-  - **Minimal Memory Footprint:** Leaves maximum internal SRAM free for the LVGL display framebuffer.
-  - **Extended Coverage:** Enables monitoring balcony and living room plants without buying proprietary Bluetooth bridges.
-
 ---
 
 ## 🔄 Factory Firmware Backup & Recovery
