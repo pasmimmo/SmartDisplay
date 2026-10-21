@@ -9,7 +9,7 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
 ```
 [Fase 1: Riorganizzazione Codice] ──> [Fase 2: Test & Fix] ──> [Fase 3: Nuove Migliorie]
                                                                         │
-[Fase 5: Documentazione & Rilascio] <── [Fase 4: Esempi Automazioni] <──┘
+[Fase 6: Portfolio & Engineering] <── [Fase 5: Documentazione] <────────┘
 ```
 
 ---
@@ -67,15 +67,45 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
 
 ---
 
-### Fase 5: Documentazione Doppia (Lapidaria & Tecnica)
-- [x] **Guida Lapidaria / Quickstart in 3 passi** in [`docs/QUICKSTART.md`](docs/QUICKSTART.md):
-  - Compra il device -> Inserisci Wi-Fi -> Flash -> Invia notifica
-- [x] **Documentazione Tecnica Completa** in [`docs/HARDWARE.md`](docs/HARDWARE.md):
-  - Riconoscimento hardware `SP-ESP32-S3-1.28-BOX` e link AliExpress
-  - Riferimento al firmware stock cinese `78/xiaozhi-esp32`
-  - Tabella pinout completa a 19 GPIO (SPI, I2C, I2S, ADC, PWM, power)
-  - Architettura di gestione energetica e calibrazione batteria
-  - Istruzioni di backup e ripristino firmware di serie con `esptool.py`
-- [x] **README.md principale di livello GitHub**:
-  - Badge professionali, panoramica, tabella icone e colori, diagramma delle gesture touch, albero del repository
+### Fase 5: Documentazione Doppia (Lapidaria & Tecnica) e Rilascio
+- [x] **Guida Lapidaria / Quickstart in 3 passi** in [`docs/QUICKSTART.md`](docs/QUICKSTART.md)
+- [x] **Documentazione Tecnica Completa** in [`docs/HARDWARE.md`](docs/HARDWARE.md) con pinout a 19 GPIO
+- [x] **README.md principale di livello GitHub** con diagramma a 3 attori e badge My Home Assistant
 - [x] Licenza MIT in [`LICENSE`](LICENSE)
+- [x] Note di rilascio ufficiali in [`RELEASE_NOTES.md`](RELEASE_NOTES.md)
+- [x] Wiki GitHub online con sidebar e 6 guide dedicate
+- [x] Release ufficiale `v1.0.0` pubblicata su GitHub
+
+---
+
+### Fase 6: Portfolio & Engineering Excellence (Senior Dev Quality)
+
+#### 1. ⚙️ CI/CD & Pipeline di Automazione
+- [ ] Workflow GitHub Actions (`.github/workflows/ci.yml`) per validazione automatica configurazione ESPHome su push e PR
+- [ ] Linting automatico dei file YAML (`yamllint`) per standard di formattazione
+- [ ] Badge di build passing nel `README.md` (`ESPHome Validation | Passing`)
+
+#### 2. 🧠 ADR (Architecture Decision Records)
+- [ ] Documento [`docs/ARCHITECTURE_DECISIONS.md`](docs/ARCHITECTURE_DECISIONS.md) con le motivazioni ingegneristiche:
+  - **ADR-01**: Bus SPI a 80MHz vs 40MHz (calcolo del pixel throughput e timing budget a 30fps)
+  - **ADR-02**: Passive BLE Proxy vs Active (co-esistenza RF a 2.4GHz, RAM saving e prevenzione underrun audio I2S)
+  - **ADR-03**: Dynamic Power Gating su GPIO46 (risparmio corrente di riposo amplificatore Classe D e azzeramento fruscio)
+  - **ADR-04**: Coda notifiche LIFO a 10 elementi (priorità visiva per messaggistica domotica immediata)
+  - **ADR-05**: Sincronizzazione SNTP a evento (azzeramento del wake lock ciclico della CPU rispetto al polling a 10s)
+
+#### 3. 🤝 Standard Open Source & Dev Experience (DX)
+- [ ] Guida per i contributori in [`CONTRIBUTING.md`](CONTRIBUTING.md) (setup locale, convenzione commit, branch workflow)
+- [ ] Template per le Issue di GitHub (`.github/ISSUE_TEMPLATE/`):
+  - Form guidato per Bug Report (`bug_report.yml`)
+  - Form guidato per Feature Request (`feature_request.yml`)
+- [ ] Template per le Pull Request (`.github/pull_request_template.md`) con checklist di verifica
+- [ ] Codice di condotta Contributor Covenant in [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)
+
+#### 4. 📸 Visual Showcase & Media Reali
+- [ ] GIF animate del display funzionante nel `README.md` (schermata standby, animazione notifica, gesture touch)
+- [ ] Foto reali del device su scrivania/comodino
+- [ ] Immagine banner per anteprima social su GitHub (`.github/assets/banner.png`)
+
+#### 5. 🌐 Condivisione Community
+- [ ] Sottomissione scheda su [devices.esphome.io](https://devices.esphome.io) per la board SP-ESP32-S3-1.28-BOX
+- [ ] Post di presentazione su Home Assistant Community (sezione *Share your Projects*)
