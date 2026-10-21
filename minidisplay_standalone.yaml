@@ -297,16 +297,16 @@ script:
           time: 120ms
       - script.execute: reset_sleep_timer
 
-  # Updates device diagnostics page
+  # Formats device diagnostics into a clean, centered layout
   - id: update_debug_page
     mode: restart
     then:
       - lvgl.label.update:
           id: debug_info_label
           text: !lambda |-
-            std::string ip = id(ip_address).state.empty() ? "-" : id(ip_address).state;
+            std::string ip = id(ip_address).state.empty() ? "Connecting..." : id(ip_address).state;
             std::string ssid = id(wifi_ssid).state.empty() ? "-" : id(wifi_ssid).state;
-            const char *charging = id(charging_sensor).state ? "YES" : "NO";
+            const char *charging_str = id(charging_sensor).state ? "Charging" : "Battery";
 
             char uptime_buf[24];
             uint32_t total = (uint32_t) id(uptime_sensor).state;
@@ -315,31 +315,29 @@ script:
             uint32_t hours = total / 3600UL;
             total %= 3600UL;
             uint32_t mins = total / 60UL;
-            uint32_t secs = total % 60UL;
             snprintf(
               uptime_buf,
               sizeof(uptime_buf),
-              "%ud %02uh %02um %02us",
-              (unsigned int) days, (unsigned int) hours, (unsigned int) mins, (unsigned int) secs
+              "%ud %02uh %02um",
+              (unsigned int) days, (unsigned int) hours, (unsigned int) mins
             );
 
-            char buf[768];
+            char buf[512];
             snprintf(
               buf,
               sizeof(buf),
-              "BOARD\nSP-ESP32-S3-1.28-BOX\n\n"
-              "DEVICE\n%s\nESPHome %s\n\n"
-              "NETWORK\nIP %s\nWi-Fi %s\nRSSI %.0f dBm\n\n"
-              "POWER\nBattery %.0f %%\nCharging %s\n\n"
-              "UPTIME\n%s",
-              App.get_name().c_str(),
-              ESPHOME_VERSION,
+              "IP: %s\n"
+              "Wi-Fi: %s (%.0f dBm)\n"
+              "Power: %.0f%% (%s)\n"
+              "Uptime: %s\n"
+              "ESPHome %s",
               ip.c_str(),
               ssid.c_str(),
               id(wifi_signal_db).state,
               id(battery_percentage).state,
-              charging,
-              uptime_buf
+              charging_str,
+              uptime_buf,
+              ESPHOME_VERSION
             );
             return std::string(buf);
 
@@ -869,16 +867,41 @@ lvgl:
       bg_opa: COVER
       scrollable: false
       widgets:
+        # Header Title
+        - label:
+            id: debug_title_label
+            text: "SYSTEM INFO"
+            align: TOP_MID
+            y: 20
+            text_font: font_text
+            text_color: 0x00E5FF
+            text_align: CENTER
+            clickable: false
+            bg_opa: TRANSP
+
+        # Centered System Metrics
         - label:
             id: debug_info_label
             text: "Loading diagnostics..."
             align: CENTER
-            width: 220
-            height: 215
-            long_mode: WRAP
-            text_align: LEFT
+            y: 4
+            width: 200
             text_font: font_debug
             text_color: 0xFFFFFF
+            text_line_space: 6
+            text_align: CENTER
+            clickable: false
+            bg_opa: TRANSP
+
+        # Bottom Exit Prompt
+        - label:
+            id: debug_hint_label
+            text: "Swipe to exit"
+            align: BOTTOM_MID
+            y: -18
+            text_font: font_debug
+            text_color: 0x666666
+            text_align: CENTER
             clickable: false
             bg_opa: TRANSP
 
@@ -891,6 +914,14 @@ lvgl:
           - lvgl.page.show:
               id: home_page
               animation: MOVE_BOTTOM
+              time: 180ms
+          - script.execute: reset_sleep_timer
+
+      on_swipe_down:
+        then:
+          - lvgl.page.show:
+              id: home_page
+              animation: MOVE_TOP
               time: 180ms
           - script.execute: reset_sleep_timer
 
