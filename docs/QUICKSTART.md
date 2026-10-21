@@ -70,3 +70,4 @@ The screen will wake up, smoothly fade on, and display your notification card!
 | **Swipe Down** (in notifications) | Open confirmation modal to clear all notifications |
 | **Double Tap** | Toggle display backlight On / Off |
 | **Long Press** (on clock) | Open Hardware & Diagnostic Debug screen |
+

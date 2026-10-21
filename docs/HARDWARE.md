@@ -83,3 +83,4 @@ esptool.py --port COM_PORT --baud 921600 write_flash 0 stock_xiaozhi_backup.bin
 ```
 
 *(Replace `COM_PORT` with your device's serial port, e.g. `COM5` on Windows or `/dev/ttyACM0` on Linux).*
+

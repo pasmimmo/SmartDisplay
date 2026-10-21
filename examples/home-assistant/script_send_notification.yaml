@@ -66,3 +66,4 @@ minidisplay_notify:
         icon: "{{ icon }}"
         text_color: "{{ text_color }}"
         timeout: "{{ timeout }}"
+

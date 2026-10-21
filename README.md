@@ -179,3 +179,4 @@ data:
 * Reverse engineering hardware insights from [78/xiaozhi-esp32](https://github.com/78/xiaozhi-esp32).
 * Built with [ESPHome](https://esphome.io) and [LVGL](https://lvgl.io).
 * Created with ❤️ by **pasmimmo** for the Home Assistant & ESPHome community.
+

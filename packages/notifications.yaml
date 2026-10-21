@@ -39,35 +39,36 @@ api:
         timeout: int
       then:
         - lambda: |-
+            std::string color_str(text_color.c_str());
             uint32_t rgb = 0xFFFFFF; // Default: White
 
             // Parse color: accepts #RRGGBB, 0xRRGGBB, plain hex RRGGBB, or CSS color names
-            if (!text_color.empty()) {
-              if (text_color[0] == '#') {
-                rgb = strtoul(text_color.c_str() + 1, nullptr, 16) & 0xFFFFFF;
-              } else if (text_color.rfind("0x", 0) == 0 || text_color.rfind("0X", 0) == 0) {
-                rgb = strtoul(text_color.c_str() + 2, nullptr, 16) & 0xFFFFFF;
-              } else if (text_color == "red")     rgb = 0xFF0000;
-              else if (text_color == "green")   rgb = 0x00FF00;
-              else if (text_color == "blue")    rgb = 0x3399FF;
-              else if (text_color == "yellow")  rgb = 0xFFFF00;
-              else if (text_color == "orange")  rgb = 0xFF8800;
-              else if (text_color == "cyan")    rgb = 0x00FFFF;
-              else if (text_color == "magenta") rgb = 0xFF00FF;
-              else if (text_color == "black")   rgb = 0x000000;
-              else if (text_color == "white")   rgb = 0xFFFFFF;
+            if (!color_str.empty()) {
+              if (color_str[0] == '#') {
+                rgb = strtoul(color_str.c_str() + 1, nullptr, 16) & 0xFFFFFF;
+              } else if (color_str.size() >= 2 && color_str[0] == '0' && (color_str[1] == 'x' || color_str[1] == 'X')) {
+                rgb = strtoul(color_str.c_str() + 2, nullptr, 16) & 0xFFFFFF;
+              } else if (color_str == "red")     rgb = 0xFF0000;
+              else if (color_str == "green")   rgb = 0x00FF00;
+              else if (color_str == "blue")    rgb = 0x3399FF;
+              else if (color_str == "yellow")  rgb = 0xFFFF00;
+              else if (color_str == "orange")  rgb = 0xFF8800;
+              else if (color_str == "cyan")    rgb = 0x00FFFF;
+              else if (color_str == "magenta") rgb = 0xFF00FF;
+              else if (color_str == "black")   rgb = 0x000000;
+              else if (color_str == "white")   rgb = 0xFFFFFF;
               else {
                 char *end = nullptr;
-                uint32_t parsed = strtoul(text_color.c_str(), &end, 16);
-                if (end != text_color.c_str()) {
+                uint32_t parsed = strtoul(color_str.c_str(), &end, 16);
+                if (end != color_str.c_str()) {
                   rgb = parsed & 0xFFFFFF;
                 }
               }
             }
 
             // LIFO Queue: prepend new notification at index 0
-            id(notif_texts).insert(id(notif_texts).begin(), message);
-            id(notif_icons).insert(id(notif_icons).begin(), icon);
+            id(notif_texts).insert(id(notif_texts).begin(), std::string(message.c_str()));
+            id(notif_icons).insert(id(notif_icons).begin(), std::string(icon.c_str()));
             id(notif_colors).insert(id(notif_colors).begin(), rgb);
 
             // Keep maximum 10 notifications in history
