@@ -45,10 +45,11 @@ Progetto firmware open-source basato su ESPHome e LVGL per smart display circola
 ---
 
 ### Fase 3: Migliorie & Nuove Funzionalità
-- [ ] **Meteo in standby**: Mostrare temperatura e icona meteo (o stato sintetico) nella `home_page` oltre all'orologio
-  - [ ] Aggiungere entità Home Assistant (`homeassistant` sensor/text_sensor per temperatura e meteo)
-  - [ ] Aggiungere icone meteo al font Material Symbols (sole, nuvoloso, pioggia, neve, temporale)
-  - [ ] Riorganizzare il layout circolare di `home_page` per accogliere ora + meteo in modo armonioso
+- [x] **Meteo in standby**: Mostrare temperatura e icona meteo dinamica nella `home_page` oltre all'orologio
+  - [x] Integrata entità `weather.forecast_casa` tramite `packages/weather.yaml`
+  - [x] Aggiunti simboli meteo (`sunny`, `rainy`, `cloudy`, `thunderstorm`, `snow`, `fog`, `night`) in `packages/fonts.yaml`
+  - [x] Adattato layout circolare: orologio a `y: -20`, icona meteo (`x: -28`, `y: 44`) e temperatura (`x: 18`, `y: 44`)
+  - [x] Aggiornato sia il codice modulare sia `minidisplay_standalone.yaml`
 - [ ] Controllo luminosità dimmerabile da Home Assistant o modalità notturna automatica
 - [ ] Segnale sonoro / beep opzionale alla ricezione di una notifica (tramite speaker I2S)
 - [ ] Indicatore visuale rapido (es. piccolo badge/pallino se ci sono notifiche non lette)
