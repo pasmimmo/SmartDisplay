@@ -13,22 +13,21 @@ It repurposes the popular AliExpress [Xiaozhi AI desktop box](https://it.aliexpr
 
 ## 🗺️ System Overview & Architecture
 
-MiniDisplay connects Home Assistant, the circular display hardware, and nearby Bluetooth sensors in a simple, streamlined pipeline:
+High-level architecture connecting **Home Assistant**, the **Smart Display**, and nearby **Bluetooth Low Energy (BLE)** devices:
 
 ```mermaid
 flowchart LR
-    HA["🏠 <b>Home Assistant</b><br>Automations, Weather & TTS"]
-    MD["🔮 <b>MiniDisplay</b> (ESP32-S3)<br>ESPHome + LVGL 8"]
-    LCD["📱 <b>1.28' Round Screen</b><br>Clock, Weather & Notifications"]
-    SPK["🔊 <b>Built-in Speaker</b><br>Voice Announcements"]
-    BLE["🌿 <b>Xiaomi Plant Sensors</b><br>Passive BLE Telemetry"]
+    HA["🏠 <b>Home Assistant</b>"]
+    SD["🔮 <b>Smart Display</b><br><i>(ESP32-S3)</i>"]
+    BLE["📡 <b>BLE Devices</b><br><i>(Sensors & Beacons)</i>"]
 
-    HA -->|"1. Push notifications & weather"| MD
-    HA -->|"2. Stream speech audio"| SPK
-    MD -->|"3. Draw circular UI"| LCD
-    LCD -.->|"4. Touch swipes & taps"| MD
-    BLE -->|"5. Passive BLE broadcasts"| MD
-    MD -->|"6. Forward sensor data"| HA
+    HA -->|"🔔 Notifications & Alerts"| SD
+    HA -->|"⛅ Weather & Time Sync"| SD
+    HA -->|"🔊 TTS Voice Stream"| SD
+    SD -->|"📶 Proxied BLE Telemetry"| HA
+    SD -->|"🔋 Battery & Diagnostics"| HA
+
+    BLE -->|"📡 Beacons & Sensor Data<br><i>(Xiaomi Flora, BTHome)</i>"| SD
 ```
 
 ---
